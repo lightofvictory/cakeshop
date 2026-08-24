@@ -1,0 +1,247 @@
+@use '../../variables.scss' as *;
+
+.auth-page { display: grid; min-height: 100vh; place-items: center; padding: 8.5rem 1.5rem 4rem; background: linear-gradient(rgba(43, 27, 31, .88), rgba(43, 27, 31, .88)), url('../../assets/bakery-hero.png') center / cover; }
+.auth-page > section { width: min(100%, 34rem); padding: 3rem; background: $bg-card; border-radius: $radius-xl; box-shadow: 0 2rem 5.5rem rgba(0, 0, 0, .2); }
+.auth-kicker { margin: 0 0 .6rem; color: $primary; font-size: $font-xs; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+.auth-page h1, .profile-page h1 { margin: 0; color: $text-heading; font-size: clamp(2.4rem, 4vw, 3.4rem); }
+.auth-subtitle { margin: 1rem 0 2rem; color: $text-primary; font-size: $font-base; line-height: 1.7; }
+.auth-page form { display: grid; gap: 1.25rem; }
+.auth-page label { color: $text-heading; font-size: $font-sm; font-weight: 700; }
+.auth-page input { box-sizing: border-box; width: 100%; margin-top: .4rem; padding: 1rem; border: 0.1rem solid $border; border-radius: $radius-sm; background: $bg-main; font-size: $font-base; outline-color: $primary; }
+.auth-page button { display: inline-flex; align-items: center; justify-content: center; min-height: 4.4rem; padding: 1rem 2rem; color: $text-white; background: $primary; border: 0; border-radius: $radius-pill; cursor: pointer; font-size: $font-sm; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; transition: $transition; &:hover { background: $primary-hover; transform: translateY(-0.2rem); } }
+.auth-page > section > p:last-child { margin: 1.5rem 0 0; color: $text-secondary; font-size: $font-sm; text-align: center; }
+.auth-page a, .account-action { color: $primary; font-weight: 700; text-decoration: none; &:hover { text-decoration: underline; } }
+
+.profile-page { width: min(120rem, calc(100% - 4rem)); min-height: 100vh; margin: 0 auto; padding: 8.5rem 0 5rem; }
+.profile-page header > p:not(.auth-kicker) { max-width: 45rem; color: $text-primary; font-size: $font-base; line-height: 1.7; }
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2.5rem; }
+.profile-card { padding: 2.2rem; background: $bg-card; border: 0.1rem solid $border; border-radius: $radius-lg; box-shadow: 0 0.8rem 2.4rem rgba(43, 27, 31, .06); }
+.profile-card h2 { margin: 0 0 1.25rem; color: $text-heading; font-size: $font-xl; }
+.profile-card p { min-height: 3.8rem; color: $text-primary; font-size: $font-base; line-height: 1.7; }
+.profile-card dl { margin: 0; }
+.profile-card dl div { padding: 1rem 0; border-top: 0.1rem solid $border; }
+.profile-card dt { color: $text-secondary; font-size: $font-xs; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.profile-card dd { margin: .35rem 0 0; color: $text-heading; font-size: $font-base; font-weight: 600; }
+.account-action { display: inline-flex; align-items: center; min-height: 4.4rem; margin-top: 1rem; font-size: $font-sm; }
+.sign-out { display: inline-flex; align-items: center; justify-content: center; min-height: 4.4rem; margin-top: 1.5rem; padding: .8rem 1.6rem; color: $text-primary; background: transparent; border: 0.15rem solid $border; border-radius: $radius-pill; cursor: pointer; font-size: $font-sm; font-weight: 700; transition: $transition; &:hover { border-color: $primary; color: $primary; } }
+@include tablet-down {
+  .auth-page > section { padding: 2.5rem; }
+  .profile-page { width: min(100% - 3rem, 56rem); }
+}
+
+.full-width-card {
+  grid-column: 1 / -1;
+
+  .card-header-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.6rem;
+
+    h2 { margin: 0; }
+
+    .add-address-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.8rem 1.6rem;
+      background: $primary;
+      color: #ffffff;
+      border: none;
+      border-radius: $radius-pill;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: $transition;
+
+      &:hover {
+        background: $primary-hover;
+        transform: translateY(-0.2rem);
+      }
+    }
+  }
+
+  .address-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
+    gap: 1.6rem;
+
+    .address-box {
+      background: #f8f8f9;
+      border: 0.12rem solid $border;
+      border-radius: 1.6rem;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      position: relative;
+      transition: $transition;
+
+      &:hover {
+        border-color: $primary;
+        background: #ffffff;
+        box-shadow: 0 0.6rem 2rem rgba($primary, 0.12);
+      }
+
+      .box-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .address-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.3rem 0.8rem;
+          background: #fff0f3;
+          color: $primary;
+          border-radius: $radius-pill;
+          font-size: 1.1rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .delete-addr-btn {
+          background: transparent;
+          border: none;
+          color: $text-secondary;
+          font-size: 1.4rem;
+          cursor: pointer;
+          transition: $transition;
+          &:hover { color: #e53e3e; transform: scale(1.1); }
+        }
+      }
+
+      .address-text {
+        margin: 0;
+        font-weight: 700;
+        color: $text-heading;
+        font-size: 1.4rem;
+        min-height: auto;
+      }
+
+      .address-sub {
+        margin: 0;
+        color: $text-primary;
+        font-size: 1.2rem;
+      }
+
+      .address-phone {
+        margin: 0;
+        color: $text-secondary;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .location-link {
+        font-size: 1.2rem;
+        color: $primary;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-decoration: none;
+        &:hover { text-decoration: underline; }
+      }
+    }
+
+    .no-address-msg {
+      color: $text-secondary;
+      font-size: 1.3rem;
+      margin: 0;
+    }
+  }
+}
+
+.address-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 27, 31, 0.65);
+  backdrop-filter: blur(0.5rem);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+
+  .address-modal-content {
+    width: 100%;
+    max-width: 52rem;
+    background: #ffffff;
+    border-radius: 2.2rem;
+    padding: 2.8rem;
+    box-shadow: 0 1.6rem 4rem rgba(0,0,0,0.2);
+
+    h3 {
+      margin: 0 0 1.8rem;
+      font-family: $font-heading;
+      font-size: 2rem;
+      color: $text-heading;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+          font-size: 1.2rem;
+          font-weight: 700;
+          color: $text-heading;
+        }
+
+        input {
+          padding: 1rem 1.4rem;
+          border: 0.12rem solid $border;
+          border-radius: 1.2rem;
+          font-family: $font-body;
+          font-size: 1.3rem;
+          outline: none;
+          &:focus { border-color: $primary; background: #fff0f3; }
+        }
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1rem;
+
+        .btn-cancel {
+          padding: 1rem 1.8rem;
+          background: #f8f8f9;
+          border: 0.12rem solid $border;
+          border-radius: $radius-pill;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .btn-save {
+          padding: 1rem 2.2rem;
+          background: $primary;
+          color: #ffffff;
+          border: none;
+          border-radius: $radius-pill;
+          font-weight: 800;
+          cursor: pointer;
+          box-shadow: 0 0.4rem 1.4rem rgba($primary, 0.25);
+          &:hover { background: $primary-hover; }
+        }
+      }
+    }
+  }
+}
+

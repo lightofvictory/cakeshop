@@ -1,0 +1,313 @@
+@import '../../variables.scss';
+
+.order-pref-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 27, 31, 0.65);
+  backdrop-filter: blur(0.6rem);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.25s ease-out;
+
+  .order-pref-modal {
+    position: relative;
+    width: 100%;
+    max-width: 54rem;
+    background: #ffffff;
+    border-radius: 2.4rem;
+    padding: 3.2rem 2.8rem;
+    box-shadow: 0 1.6rem 5rem rgba(0, 0, 0, 0.22);
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    /* Hide scrollbar cross-browser */
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    .close-pref-btn {
+      position: absolute;
+      top: 1.8rem;
+      right: 1.8rem;
+      width: 3.4rem;
+      height: 3.4rem;
+      border-radius: 50%;
+      background: $bg-section;
+      border: none;
+      font-size: 1.6rem;
+      color: $text-heading;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: $transition;
+
+      &:hover {
+        background: $primary;
+        color: #ffffff;
+        transform: rotate(90deg);
+      }
+    }
+
+    .modal-header {
+      text-align: center;
+
+      .pref-badge {
+        display: inline-block;
+        padding: 0.35rem 1rem;
+        background: #fff0f3;
+        color: $primary;
+        border-radius: $radius-pill;
+        font-size: 1.1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.8rem;
+      }
+
+      h2 {
+        margin: 0 0 0.6rem;
+        font-family: $font-heading;
+        font-size: 2.2rem;
+        color: $text-heading;
+        line-height: 1.25;
+      }
+
+      p {
+        margin: 0;
+        color: $text-primary;
+        font-size: $font-sm;
+      }
+    }
+
+    .fulfillment-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+
+      .fulfillment-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 1.6rem 1rem;
+        background: #f8f8f9;
+        border: 0.15rem solid $border;
+        border-radius: 1.6rem;
+        cursor: pointer;
+        transition: $transition;
+
+        .icon {
+          font-size: 2.8rem;
+          margin-bottom: 0.8rem;
+        }
+
+        .card-info {
+          h3 {
+            margin: 0 0 0.3rem;
+            font-size: $font-base;
+            font-weight: 800;
+            color: $text-heading;
+          }
+          p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: $text-secondary;
+            line-height: 1.3;
+          }
+        }
+
+        .check-badge {
+          position: absolute;
+          top: 0.8rem;
+          right: 0.8rem;
+          width: 2.2rem;
+          height: 2.2rem;
+          background: $primary;
+          color: #ffffff;
+          border-radius: 50%;
+          font-size: 1.2rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        &:hover {
+          border-color: rgba($primary, 0.5);
+          background: #fff0f3;
+          transform: translateY(-0.2rem);
+        }
+
+        &.active {
+          border-color: $primary;
+          background: #fff0f3;
+          box-shadow: 0 0.6rem 1.8rem rgba($primary, 0.15);
+        }
+      }
+    }
+
+    .section-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .section-title {
+        font-family: $font-body;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: $text-heading;
+      }
+      .date-pill-group {
+        display: flex;
+        gap: 1.2rem;
+        width: 100%;
+
+        .date-pill {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.2rem 1.6rem;
+          background: #f8f8f9;
+          border: 0.15rem solid #e2e8f0;
+          border-radius: $radius-pill;
+          color: $text-heading;
+          font-family: $font-body;
+          font-size: 1.3rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+          outline: none;
+
+          &:hover {
+            border-color: $primary;
+            background: #fff0f3;
+            color: $primary;
+            transform: translateY(-0.2rem);
+          }
+
+          &.active {
+            background: $primary;
+            color: #ffffff;
+            border-color: $primary;
+            box-shadow: 0 0.6rem 1.8rem rgba($primary, 0.28);
+          }
+        }
+      }
+
+      .time-slot-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem;
+        width: 100%;
+
+        .time-slot-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.2rem 1.4rem;
+          background: #f8f8f9;
+          border: 0.15rem solid #e2e8f0;
+          border-radius: 1.4rem;
+          color: $text-heading;
+          font-family: $font-body;
+          font-size: 1.3rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+          outline: none;
+
+          &:hover {
+            border-color: $primary;
+            background: #fff0f3;
+            color: $primary;
+            transform: translateY(-0.2rem);
+          }
+
+          &.active {
+            background: $primary;
+            color: #ffffff;
+            border-color: $primary;
+            box-shadow: 0 0.6rem 1.8rem rgba($primary, 0.28);
+          }
+        }
+      }
+
+      .antd-picker-wrapper {
+        width: 100%;
+
+        .antd-custom-datepicker,
+        .antd-custom-timerange {
+          width: 100%;
+          border-radius: 1.4rem;
+          padding: 1rem 1.4rem;
+          border: 0.12rem solid $border;
+          background: #f8f8f9;
+          font-family: $font-body;
+
+          &:hover, &:focus, &.ant-picker-focused {
+            border-color: $primary;
+            background: #ffffff;
+            box-shadow: 0 0.4rem 1.4rem rgba($primary, 0.15);
+          }
+        }
+      }
+    }
+
+    .confirm-pref-btn {
+      margin-top: 0.6rem;
+      width: 100%;
+      min-height: 4.8rem;
+      background: $primary;
+      color: #ffffff;
+      border: none;
+      border-radius: $radius-pill;
+      font-family: $font-body;
+      font-size: 1.5rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: $transition;
+      box-shadow: 0 0.6rem 2rem rgba($primary, 0.3);
+
+      &:hover {
+        background: $primary-hover;
+        transform: translateY(-0.2rem);
+        box-shadow: 0 0.8rem 2.4rem rgba($primary, 0.4);
+      }
+    }
+  }
+}
+
+@include tablet-down {
+  .order-pref-backdrop .order-pref-modal {
+    padding: 2.4rem 1.8rem;
+
+    .fulfillment-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+@include mobile {
+  .order-pref-backdrop .order-pref-modal {
+    .fulfillment-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .time-slot-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -1,0 +1,239 @@
+@use '../../variables.scss' as *;
+
+.contact-page-container {
+  background-color: $bg-main;
+  min-height: 100vh;
+  padding: 8rem 1.5rem 6rem;
+  position: relative;
+  overflow: hidden;
+
+  .contact-decor-1 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24rem;
+    height: 24rem;
+    background-color: rgba($accent, 0.08);
+    border-radius: $radius-pill;
+    filter: blur(8rem);
+    z-index: 1;
+  }
+
+  .contact-decor-2 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 24rem;
+    height: 24rem;
+    background-color: rgba($primary, 0.06);
+    border-radius: $radius-pill;
+    filter: blur(8rem);
+    z-index: 1;
+  }
+
+  .contact-content-wrapper {
+    max-width: 120rem;
+    width: min(120rem, calc(100% - 4rem));
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  .contact-header {
+    text-align: center;
+    margin-bottom: 4rem;
+
+    .contact-badge {
+      color: $secondary-hover;
+      font-family: $font-body;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      font-size: $font-xs;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .contact-title {
+      font-family: $font-heading;
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: $text-heading;
+      
+      span {
+        background: linear-gradient(to right, $primary, $accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+  }
+
+  .contact-card-box {
+    display: flex;
+    flex-direction: column;
+    background-color: $bg-card;
+    border-radius: $radius-xl;
+    box-shadow: $shadow;
+    padding: 2.5rem;
+    border: 0.1rem solid $border;
+    position: relative;
+    gap: 3rem;
+
+    @include desktop {
+      flex-direction: row;
+      padding: 4rem;
+    }
+
+    .card-top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 0.4rem;
+      background: linear-gradient(to right, $accent, $primary, $secondary);
+    }
+
+    .contact-info-panel {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+
+      @include desktop {
+        width: 33.333%;
+      }
+
+      .info-block {
+        .info-title {
+          font-family: $font-body;
+          font-weight: 700;
+          font-size: $font-lg;
+          color: $accent-hover;
+          margin-bottom: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          .bullet-pink {
+            width: 0.8rem;
+            height: 0.8rem;
+            border-radius: $radius-pill;
+            background-color: $primary;
+            display: inline-block;
+          }
+          .bullet-peach {
+            width: 0.8rem;
+            height: 0.8rem;
+            border-radius: $radius-pill;
+            background-color: $secondary-hover;
+            display: inline-block;
+          }
+          .bullet-cyan {
+            width: 0.8rem;
+            height: 0.8rem;
+            border-radius: $radius-pill;
+            background-color: $accent;
+            display: inline-block;
+          }
+        }
+
+        .info-text {
+          font-family: $font-body;
+          color: $text-primary;
+          font-size: $font-sm;
+          line-height: 1.6;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .contact-form-panel {
+      width: 100%;
+
+      @include desktop {
+        width: 66.666%;
+      }
+
+      .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+
+        @include desktop {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+        width: 100%;
+      }
+
+      input, textarea {
+        width: 100%;
+        border: none;
+        border-bottom: 0.2rem solid $border;
+        background-color: transparent;
+        padding: 1rem 0;
+        font-family: $font-body;
+        font-size: $font-base;
+        font-weight: 500;
+        color: $text-heading;
+        transition: $transition;
+
+        &:focus {
+          outline: none;
+        }
+
+        &::placeholder {
+          color: rgba($text-heading, 0.4);
+        }
+      }
+
+      input.input-name:focus {
+        border-color: $primary;
+      }
+      input.input-email:focus {
+        border-color: $accent;
+      }
+      input.input-subject:focus {
+        border-color: $secondary-hover;
+      }
+      textarea.input-message:focus {
+        border-color: $primary;
+      }
+
+      textarea {
+        resize: none;
+      }
+
+      .btn-submit {
+        margin-top: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 4.4rem;
+        padding: 1rem 2.5rem;
+        border-radius: $radius-pill;
+        background: linear-gradient(to right, $primary, $secondary-hover);
+        color: $text-white;
+        font-family: $font-body;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: $font-sm;
+        letter-spacing: 0.1rem;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 0.8rem 2rem rgba($primary, 0.2);
+        transition: $transition;
+
+        &:hover {
+          transform: translateY(-0.2rem);
+          box-shadow: 0 0.8rem 2.5rem rgba($primary, 0.35);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+@use '../../variables.scss' as *;
+
+.special-cakes-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 3rem;
+
+  .special-cake-card {
+    position: relative;
+    background-color: $bg-card;
+    border-radius: $radius-xl;
+    box-shadow: $shadow;
+    padding: 3rem;
+    max-width: 120rem;
+    width: min(120rem, calc(100% - 4rem));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+    overflow: hidden;
+    border: 0.1rem solid $border;
+
+    @include desktop {
+      flex-direction: row;
+    }
+
+    .card-decor-gradient {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 12rem;
+      height: 12rem;
+      background: linear-gradient(to bottom left, $accent, $primary, $secondary);
+      opacity: 0.15;
+      filter: blur(4rem);
+      border-bottom-left-radius: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .special-image-wrapper {
+      width: 100%;
+      position: relative;
+      z-index: 5;
+
+      @include desktop {
+        width: 50%;
+      }
+
+      .image-backdrop-accent {
+        position: absolute;
+        inset: 0;
+        background-color: $accent;
+        border-radius: $radius-lg;
+        transform: translateX(0.75rem) translateY(0.75rem);
+        z-index: -1;
+        transition: $transition;
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        border-radius: $radius-lg;
+        box-shadow: $shadow;
+        border: 0.2rem solid $bg-card;
+        display: block;
+      }
+
+      &:hover {
+        .image-backdrop-accent {
+          transform: translateX(1rem) translateY(1rem);
+        }
+      }
+    }
+
+    .special-text-wrapper {
+      width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 5;
+
+      @include desktop {
+        width: 50%;
+        text-align: left;
+      }
+
+      .special-badge {
+        color: $secondary-hover;
+        font-family: $font-body;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        font-size: $font-xs;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .special-title {
+        font-family: $font-heading;
+        font-size: 2rem;
+        font-weight: 800;
+        color: $text-heading;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+
+        @include desktop {
+          font-size: 2.5rem;
+        }
+      }
+
+      .special-desc {
+        color: $text-primary;
+        font-family: $font-body;
+        font-size: $font-base;
+        line-height: 1.6;
+        font-weight: 400;
+      }
+    }
+  }
+}

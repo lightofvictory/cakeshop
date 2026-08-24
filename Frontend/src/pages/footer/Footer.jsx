@@ -1,6 +1,6 @@
+import React from 'react';
 import { assets } from '../../assets/assets';
 import { Link } from 'react-router-dom';
-import { YoutubeOutlined } from '@ant-design/icons';
 import "./Footer.scss";
 
 const Footer = () => {
@@ -21,21 +21,16 @@ const Footer = () => {
                         Crafting the sweetest slices of modern paradise for your most memorable moments.
                     </p>
                     <div className="social-icons">
-                        <a href="https://wa.me/919629212805" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-                            <img src={assets.whatsapp} alt="WhatsApp" />
-                        </a>
-                        <a href="https://www.instagram.com/mr.pastry7/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                        <img src={assets.whatsapp} alt="WhatsApp" />
+                        <a href="https://www.instagram.com/mr.pastry7/" target="_blank" rel="noopener noreferrer">
                             <img src={assets.instagram} alt="Instagram" />
-                        </a>
-                        <a href="https://www.youtube.com/@mr.pastry" target="_blank" rel="noopener noreferrer" aria-label="Mr. Pastry on YouTube">
-                            <YoutubeOutlined className="youtube-icon" />
                         </a>
                     </div>
                 </div>
 
                 {/* Quick Links */}
                 <div className="footer-links">
-                    <h3 className="links-title">Explore</h3>
+                    <h4 className="links-title">Explore</h4>
                     <ul>
                         <li><Link to="/">Home</Link></li>
                         <li><Link to="/about">About Us</Link></li>
@@ -46,7 +41,7 @@ const Footer = () => {
 
                 {/* Contact */}
                 <div className="footer-contact">
-                    <h3 className="contact-title">Contact</h3>
+                    <h4 className="contact-title">Contact</h4>
                     <div className="contact-details">
                         <p>Mr Pastry, Lakshmipati Hospital, Opposite Road, Ramakkapet, Tirupathur, Tamil Nadu 635601</p>
                         <p>Phone: 096292 12805</p>

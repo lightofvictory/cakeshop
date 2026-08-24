@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ========== BRAND COLORS ========== */
+  --primary: #F50B5A;
+  --primary-hover: #D9084E;
+  --primary-light: #FFE0E9;
+
+  --secondary: #F6D4A8;
+  --secondary-hover: #EDBC7E;
+
+  --accent: #68CEDF;
+  --accent-hover: #35B8D0;
+
+  /* ========== BACKGROUNDS ========== */
+  --bg-main: #FFF9F5;
+  --bg-section: #FDF0F1;
+  --bg-card: #FFFFFF;
+  --bg-highlight: #FFF0E3;
+  --bg-dark: #2B1B1F;
+
+  /* ========== TEXT ========== */
+  --text-heading: #2B1B1F;
+  --text-primary: #5F5557;
+  --text-secondary: #908689;
+  --text-white: #FFFFFF;
+  --text-footer: #F6D4A8;
+
+  /* ========== BORDER & SHADOW ========== */
+  --border: #F1DDDF;
+  --shadow: 0 0.8rem 3rem rgba(43, 27, 31, 0.10);
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Poppins', sans-serif;
+
+  /* Standardized Type Scale (1rem = 10px baseline) */
+  --font-xs: 1.2rem;   /* 12px min microtext / badges */
+  --font-sm: 1.4rem;   /* 14px secondary body / labels */
+  --font-base: 1.6rem; /* 16px standard body copy */
+  --font-md: 1.8rem;   /* 18px lead text / subtitles */
+  --font-lg: 2.0rem;   /* 20px card titles / small headings */
+  --font-xl: 2.4rem;   /* 24px sub-headings */
+  --font-2xl: 3.2rem;  /* 32px section titles */
+  --font-3xl: 4.4rem;  /* 44px hero titles */
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-sm: 0.8rem;
+  --radius-md: 1.2rem;
+  --radius-lg: 1.6rem;
+  --radius-xl: 2.0rem;
+  --radius-pill: 5.0rem;
+
+  /* ========== TRANSITIONS ========== */
+  --transition: all 0.3s ease;
+}
+html {
+  font-size: 62.5%; /* 1rem = 10px baseline */
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-heading);
+}

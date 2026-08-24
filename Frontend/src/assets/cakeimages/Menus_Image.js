@@ -36,6 +36,7 @@ import oreo from './premium_cakes/oreo_cake.jpg';
 import rainbow from './premium_cakes/rainbow_cake.jpg';
 import rasamalai from './premium_cakes/rasamalai.jpg';
 import rose_cake from './premium_cakes/rose_cake.jpg';
+import banana_cake from '../banana_cake.png';
 
 
 
@@ -76,6 +77,7 @@ export const cakeImages = {
     ],
    
     PREMIUM_CAKES: [
+        { name: 'GEMINI BANANA CAKE', price: convertToINR(18), image: banana_cake },
         { name: 'CAREMAL CAKES', price: convertToINR(10), image: caremal_cakes },
         { name: 'CHOCOLATE MOUSE', price: convertToINR(12), image: chocolate_mouse },
         { name: 'FERRO ROCHER', price: convertToINR(11), image: ferro_rocher },

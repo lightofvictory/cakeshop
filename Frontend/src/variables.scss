@@ -1,0 +1,98 @@
+// SCSS Variables referencing CSS variables for dynamic themes
+$primary: var(--primary);
+$primary-hover: var(--primary-hover);
+$primary-light: var(--primary-light);
+
+$secondary: var(--secondary);
+$secondary-hover: var(--secondary-hover);
+
+$accent: var(--accent);
+$accent-hover: var(--accent-hover);
+
+$bg-main: var(--bg-main);
+$bg-section: var(--bg-section);
+$bg-card: var(--bg-card);
+$bg-highlight: var(--bg-highlight);
+$bg-dark: var(--bg-dark);
+
+$text-heading: var(--text-heading);
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-white: var(--text-white);
+$text-footer: var(--text-footer);
+
+$border: var(--border);
+$shadow: var(--shadow);
+
+$font-heading: var(--font-heading);
+$font-body: var(--font-body);
+
+// Type scale variables (1rem = 10px)
+$font-xs: var(--font-xs);
+$font-sm: var(--font-sm);
+$font-base: var(--font-base);
+$font-md: var(--font-md);
+$font-lg: var(--font-lg);
+$font-xl: var(--font-xl);
+$font-2xl: var(--font-2xl);
+$font-3xl: var(--font-3xl);
+
+$radius-sm: var(--radius-sm);
+$radius-md: var(--radius-md);
+$radius-lg: var(--radius-lg);
+$radius-xl: var(--radius-xl);
+$radius-pill: var(--radius-pill);
+
+$transition: var(--transition);
+
+// Breakpoints
+$bp-mobile: 57.6rem;    // < 576px
+$bp-tablet: 76.8rem;    // < 768px
+$bp-desktop: 99.2rem;   // < 992px
+$bp-large: 120rem;      // < 1200px
+
+// Responsive Mixins
+@mixin mobile {
+  @media (max-width: $bp-mobile) {
+    @content;
+  }
+}
+
+@mixin tablet-down {
+  @media (max-width: $bp-tablet) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 57.61rem) and (max-width: $bp-desktop) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 76.81rem) {
+    @content;
+  }
+}
+
+@mixin large-desktop {
+  @media (min-width: 120.01rem) {
+    @content;
+  }
+}
+
+@mixin respond-to($media) {
+  @if $media == 'mobile' {
+    @media (max-width: $bp-mobile) { @content; }
+  } @else if $media == 'tablet' {
+    @media (min-width: 57.61rem) and (max-width: $bp-desktop) { @content; }
+  } @else if $media == 'tablet-down' {
+    @media (max-width: $bp-tablet) { @content; }
+  } @else if $media == 'desktop' {
+    @media (min-width: 76.81rem) { @content; }
+  } @else if $media == 'large' {
+    @media (min-width: 120.01rem) { @content; }
+  }
+}
+

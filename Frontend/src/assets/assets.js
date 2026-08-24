@@ -12,6 +12,7 @@ import cake7 from './cake7.jpg';
 import whatsapp from './whatsapp.png';
 // import instagram from './instagram.png';
 import instagram from './instagram.png';
+import bakeryHero from './bakery-hero.png';
 
 const cakes = [cake1, cake2, cake3, cake4, cake5, cake6, cake7];
 const cakeDetails = [
@@ -64,6 +65,7 @@ addcart_icon,
 cakelogo,
 search_icon,
 cake1,
+cake2,
 cake3,
 cake4,
 cake5,
@@ -72,7 +74,7 @@ cake7,
 background,
 whatsapp,
 instagram
+,
+bakeryHero
 
 }
-
-

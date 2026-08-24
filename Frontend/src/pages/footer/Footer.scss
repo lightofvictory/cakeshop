@@ -1,0 +1,220 @@
+@use '../../variables.scss' as *;
+
+.footer-container {
+  background-color: $bg-dark;
+  color: $text-footer;
+  padding: 4rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+
+  .footer-decor-1 {
+    position: absolute;
+    top: 0;
+    right: 2.5rem;
+    width: 8rem;
+    height: 8rem;
+    background-color: rgba($accent, 0.1);
+    filter: blur(4rem);
+    border-radius: $radius-pill;
+  }
+
+  .footer-decor-2 {
+    position: absolute;
+    bottom: 0;
+    left: 2.5rem;
+    width: 10rem;
+    height: 10rem;
+    background-color: rgba($primary, 0.1);
+    filter: blur(4rem);
+    border-radius: $radius-pill;
+  }
+
+  .footer-content {
+    max-width: 120rem;
+    width: min(120rem, calc(100% - 4rem));
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+
+    @include desktop {
+      grid-template-columns: 2fr 1fr 1.5fr;
+      gap: 4rem;
+      text-align: left;
+    }
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    @include desktop {
+      align-items: flex-start;
+    }
+
+    .brand-title {
+      font-family: $font-heading;
+      font-size: $font-xl;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(to right, $primary, $accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-desc {
+      font-family: $font-body;
+      font-size: $font-sm;
+      max-width: 32rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+      color: rgba($text-footer, 0.85);
+    }
+
+    .social-icons {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      margin-top: 1rem;
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4.8rem;
+        height: 4.8rem;
+        border-radius: 50%;
+        background-color: rgba($primary, 0.15);
+        border: 0.15rem solid rgba($primary, 0.4);
+        transition: $transition;
+        box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background-color: $primary;
+          border-color: $primary;
+          transform: translateY(-0.3rem);
+          box-shadow: 0 0.8rem 2rem rgba($primary, 0.45);
+
+          .youtube-icon {
+            color: #fff;
+          }
+        }
+      }
+
+      img {
+        height: 3.2rem;
+        width: 3.2rem;
+        object-fit: contain;
+        transition: $transition;
+        cursor: pointer;
+      }
+
+      .youtube-icon {
+        font-size: 3.2rem;
+        color: $primary;
+        transition: $transition;
+      }
+    }
+  }
+
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    @include desktop {
+      align-items: flex-start;
+    }
+
+    .links-title {
+      font-family: $font-body;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: $font-base;
+      font-weight: 700;
+      color: $text-white;
+      margin-bottom: 1.5rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-family: $font-body;
+      font-weight: 500;
+
+      a {
+        font-size: $font-sm;
+        color: rgba($text-footer, 0.85);
+        text-decoration: none;
+        transition: $transition;
+
+        &:hover {
+          color: $primary;
+        }
+      }
+    }
+  }
+
+  .footer-contact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    @include desktop {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .contact-title {
+      font-family: $font-body;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: $font-base;
+      font-weight: 700;
+      color: $text-white;
+      margin-bottom: 1.5rem;
+    }
+
+    .contact-details {
+      font-family: $font-body;
+      font-size: $font-sm;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      color: rgba($text-footer, 0.85);
+      line-height: 1.6;
+
+      p {
+        margin: 0;
+      }
+    }
+  }
+
+  .footer-bottom {
+    max-width: 120rem;
+    width: min(120rem, calc(100% - 4rem));
+    margin: 4rem auto 0;
+    padding-top: 2rem;
+    border-top: 0.1rem solid rgba($text-footer, 0.1);
+    text-align: center;
+    color: rgba($text-footer, 0.6);
+    font-size: $font-xs;
+    font-family: $font-body;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    position: relative;
+    z-index: 10;
+  }
+}
