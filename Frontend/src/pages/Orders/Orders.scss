@@ -1,408 +1,432 @@
 @use '../../variables.scss' as *;
 
-.orders-page { width: min(120rem, calc(100% - 4rem)); min-height: 100vh; margin: 0 auto; padding: 8.5rem 0 5rem; }
-.orders-page header > p:not(.auth-kicker) { color: $text-primary; font-size: $font-base; line-height: 1.7; }
-.order-tabs { display: flex; gap: 1rem; margin-top: 2rem; border-bottom: 0.1rem solid $border; }
-.order-tabs button { display: inline-flex; align-items: center; min-height: 4.4rem; padding: 1rem 1.4rem; color: $text-secondary; background: transparent; border: 0; border-bottom: 0.2rem solid transparent; cursor: pointer; font: inherit; font-size: $font-sm; font-weight: 700; transition: $transition; }
-.order-tabs button.active { color: $primary; border-bottom-color: $primary; }
-.order-tabs span { display: inline-grid; min-width: 1.8rem; height: 1.8rem; margin-left: .5rem; place-items: center; color: $text-white; background: $primary; border-radius: 50%; font-size: $font-xs; font-weight: 700; }
-.orders-list { display: grid; gap: 1.5rem; margin-top: 2rem; }
-.order-card { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.8rem; background: $bg-card; border: 0.1rem solid $border; border-radius: $radius-lg; box-shadow: 0 0.8rem 2.4rem rgba(43, 27, 31, .05); }
-.order-number { margin: 0; color: $text-secondary; font-size: $font-xs; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.order-card h2 { margin: .4rem 0; color: $text-heading; font-size: $font-lg; }
-.order-card p:not(.order-number) { margin: 0; color: $text-primary; font-size: $font-sm; }
-.order-card-side { display: grid; justify-items: end; gap: .75rem; }
-.order-card-side strong { color: $text-heading; font-size: $font-base; }
-.order-status { padding: .4rem .8rem; color: #9a5d00; background: #fff1d8; border-radius: $radius-pill; font-size: $font-xs; font-weight: 700; }
-.orders-empty { margin-top: 2rem; padding: 4rem 1.5rem; text-align: center; background: $bg-section; border-radius: $radius-lg; }
-.orders-empty h2 { margin: 0; color: $text-heading; font-size: $font-xl; }
-.orders-empty p { color: $text-primary; font-size: $font-base; margin: 1rem 0; }
-.orders-empty a { display: inline-flex; align-items: center; justify-content: center; min-height: 4.4rem; padding: 1rem 2rem; color: $text-white; background: $primary; border-radius: $radius-pill; font-weight: 700; text-decoration: none; font-size: $font-sm; text-transform: uppercase; }
-.order-id-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.9rem;
-  background: #fff0f3;
-  color: $primary;
-  border: 0.1rem solid rgba($primary, 0.3);
-  border-radius: $radius-pill;
-  font-family: $font-body;
-  font-size: 1.2rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: $transition;
+.orders-page {
+  max-width: 124rem;
+  width: min(124rem, calc(100% - 3.2rem));
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
 
-  &:hover {
-    background: $primary;
-    color: #ffffff;
-    transform: scale(1.03);
-  }
-}
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
 
-.view-modal-btn {
-  padding: 0.6rem 1.4rem;
-  background: #f8f8f9;
-  border: 0.12rem solid $border;
-  border-radius: $radius-pill;
-  color: $text-heading;
-  font-family: $font-body;
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: $transition;
+    .auth-kicker {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: $primary;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.4rem;
+    }
 
-  &:hover {
-    background: $primary;
-    color: #ffffff;
-    border-color: $primary;
-  }
-}
-
-.order-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(43, 27, 31, 0.65);
-  backdrop-filter: blur(0.6rem);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-
-  .order-modal-card {
-    position: relative;
-    width: 100%;
-    max-width: 64rem;
-    background: #ffffff;
-    border-radius: 2.4rem;
-    padding: 3rem 2.6rem;
-    box-shadow: 0 1.6rem 5rem rgba(0, 0, 0, 0.22);
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    max-height: 90vh;
-    overflow-y: auto;
-
-    &::-webkit-scrollbar { display: none; }
-
-    .close-modal-btn {
-      position: absolute;
-      top: 1.8rem;
-      right: 1.8rem;
-      width: 3.4rem;
-      height: 3.4rem;
-      border-radius: 50%;
-      background: $bg-section;
-      border: none;
-      font-size: 1.6rem;
+    h1 {
+      font-family: $font-heading;
+      font-size: 3.4rem;
       color: $text-heading;
+      margin: 0 0 0.6rem;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: 1.35rem;
+    }
+  }
+
+  .order-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+
+    button {
+      padding: 0.9rem 2.2rem;
+      background: #f8f8f9;
+      border: 0.12rem solid $border;
+      border-radius: $radius-pill;
+      font-family: $font-body;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: $text-primary;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.8rem;
       transition: $transition;
 
-      &:hover {
+      span {
+        padding: 0.2rem 0.7rem;
+        background: #ffffff;
+        border-radius: $radius-pill;
+        font-size: 1.15rem;
+      }
+
+      &.active {
         background: $primary;
         color: #ffffff;
-        transform: rotate(90deg);
+        border-color: $primary;
+
+        span {
+          background: rgba(255, 255, 255, 0.25);
+          color: #ffffff;
+        }
       }
     }
+  }
 
-    .modal-header {
-      .order-modal-badge {
-        display: inline-block;
-        padding: 0.3rem 0.9rem;
-        background: #fff0f3;
-        color: $primary;
-        border-radius: $radius-pill;
-        font-size: 1.1rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        margin-bottom: 0.6rem;
-      }
+  .orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2.4rem;
 
-      h2 {
-        margin: 0;
-        font-family: $font-heading;
-        font-size: 2.4rem;
-        color: $text-heading;
-      }
-
-      .order-date-str {
-        margin: 0.3rem 0 0.8rem;
-        color: $text-secondary;
-        font-size: 1.25rem;
-      }
-
-      .modal-status-tag {
-        display: inline-block;
-        padding: 0.4rem 1rem;
-        border-radius: $radius-pill;
-        font-size: 1.2rem;
-        font-weight: 800;
-        background: #fff1d8;
-        color: #9a5d00;
-      }
-    }
-
-    .modal-section-box {
-      background: #f8f8f9;
+    .order-card {
+      background: #ffffff;
       border: 0.12rem solid $border;
-      border-radius: 1.8rem;
-      padding: 1.8rem;
+      border-radius: 2.4rem;
+      padding: 2.2rem;
+      box-shadow: 0 0.6rem 2rem rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
 
-      h3 {
-        margin: 0 0 1.2rem;
-        font-family: $font-heading;
-        font-size: 1.6rem;
-        color: $text-heading;
-        padding-bottom: 0.8rem;
-        border-bottom: 0.1rem solid $border;
-      }
+      .order-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
 
-      .fulfillment-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.2rem;
-
-        .full-col {
-          grid-column: 1 / -1;
+        .order-id-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.6rem;
+          padding: 0.4rem 1.2rem;
+          background: #fff0f3;
+          color: $primary;
+          border: 0.1rem solid rgba($primary, 0.3);
+          border-radius: $radius-pill;
+          font-family: $font-body;
+          font-size: 1.2rem;
+          font-weight: 800;
+          cursor: pointer;
+          margin-bottom: 0.8rem;
         }
 
-        strong {
-          display: block;
-          font-size: 1.15rem;
-          color: $text-secondary;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          margin-bottom: 0.2rem;
+        h2 {
+          font-family: $font-heading;
+          font-size: 1.8rem;
+          margin: 0 0 0.4rem;
+          color: $text-heading;
         }
 
         p {
           margin: 0;
-          font-size: 1.35rem;
-          font-weight: 700;
-          color: $text-heading;
-        }
-
-        .cake-msg-highlight {
-          color: $primary;
-          font-style: italic;
-        }
-      }
-
-      .modal-items-table {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-
-        .table-header {
-          display: grid;
-          grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-          font-size: 1.15rem;
-          font-weight: 800;
+          font-size: 1.25rem;
           color: $text-secondary;
-          text-transform: uppercase;
-          padding-bottom: 0.6rem;
-          border-bottom: 0.1rem solid $border;
         }
 
-        .table-row {
-          display: grid;
-          grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-          align-items: center;
-          font-size: 1.3rem;
-          color: $text-heading;
+        .order-card-side {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 0.6rem;
 
-          .item-col {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-
-            .item-left-main {
-              display: flex;
-              align-items: center;
-              gap: 1rem;
-            }
-
-            .modal-item-thumb {
-              width: 4rem;
-              height: 4rem;
-              border-radius: 1rem;
-              object-fit: cover;
-            }
-
-            strong {
-              display: block;
-              font-size: 1.3rem;
-            }
-
-            small {
-              color: $text-secondary;
-              font-size: 1.1rem;
-            }
-          }
-
-          .mobile-only-cost {
-            display: none;
-          }
-
-          .row-meta-mobile {
-            display: contents;
-          }
-
-          .weight-badge {
-            display: inline-block;
-            padding: 0.2rem 0.8rem;
-            background: #ffffff;
+          .order-mode-pill {
+            padding: 0.35rem 1rem;
+            background: #f8f8f9;
             border: 0.1rem solid $border;
             border-radius: $radius-pill;
-            font-size: 1.1rem;
-            font-weight: 700;
-            width: fit-content;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: $text-heading;
           }
 
-          .qty-col {
+          strong {
+            font-size: 2rem;
+            color: $primary;
             font-weight: 800;
           }
 
-          .item-cost {
+          .view-modal-btn {
+            padding: 0.6rem 1.4rem;
+            background: #fff0f3;
             color: $primary;
+            border: 0.1rem solid rgba($primary, 0.3);
+            border-radius: $radius-pill;
+            font-family: $font-body;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: $transition;
+
+            &:hover {
+              background: $primary;
+              color: #ffffff;
+            }
           }
         }
       }
 
-      &.financial-box {
-        background: #ffffff;
+      /* Live Status Stepper */
+      .order-progress-stepper {
+        background: #f8f8f9;
+        border: 0.1rem solid #f0f0f2;
+        border-radius: 1.8rem;
+        padding: 1.6rem 1.2rem;
 
-        .breakdown-rows {
+        .stepper-track {
           display: flex;
-          flex-direction: column;
-          gap: 0.8rem;
+          align-items: center;
+          justify-content: space-between;
+          position: relative;
 
-          .b-row {
+          .step-item {
             display: flex;
-            justify-content: space-between;
-            font-size: 1.35rem;
-            color: $text-primary;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            flex: 1;
+            position: relative;
+            z-index: 2;
 
-            &.discount-row {
-              color: #2e7d32;
-              font-weight: 700;
+            .step-node {
+              width: 4rem;
+              height: 4rem;
+              border-radius: 50%;
+              background: #ffffff;
+              border: 0.12rem solid $border;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 1.6rem;
+              position: relative;
+              transition: $transition;
+
+              .done-check {
+                position: absolute;
+                bottom: -0.2rem;
+                right: -0.2rem;
+                width: 1.6rem;
+                height: 1.6rem;
+                background: #2e7d32;
+                color: #ffffff;
+                border-radius: 50%;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
             }
 
-            &.grand-total-row {
-              padding-top: 0.8rem;
-              border-top: 0.1rem dashed $border;
-              font-size: 1.8rem;
-              font-weight: 800;
-              color: $text-heading;
+            .step-label {
+              font-size: 1.15rem;
+              font-weight: 700;
+              color: $text-secondary;
+              text-align: center;
+            }
 
-              strong {
+            &.completed {
+              .step-node {
+                background: #fff0f3;
+                border-color: $primary;
+              }
+              .step-label {
                 color: $primary;
+                font-weight: 800;
+              }
+            }
+
+            &.current {
+              .step-node {
+                background: $primary;
+                border-color: $primary;
+                box-shadow: 0 0.4rem 1.4rem rgba($primary, 0.4);
+                transform: scale(1.1);
+              }
+              .step-label {
+                color: $primary;
+                font-weight: 800;
               }
             }
           }
         }
       }
+    }
+  }
 
+  .orders-empty {
+    text-align: center;
+    padding: 6rem 2rem;
+    background: #ffffff;
+    border: 0.12rem dashed $border;
+    border-radius: 2.4rem;
+
+    h2 {
+      font-family: $font-heading;
+      font-size: 2.2rem;
+      margin: 0 0 0.6rem;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: 1.35rem;
+      margin: 0 0 2rem;
+    }
+
+    a {
+      padding: 1rem 2.4rem;
+      background: $primary;
+      color: #ffffff;
+      border-radius: $radius-pill;
+      font-weight: 800;
+      text-decoration: none;
+    }
+  }
+}
+
+/* Modal Details Box */
+.order-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(0.8rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.6rem;
+}
+
+.order-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 65rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 2.8rem;
+  padding: 2.8rem;
+  box-shadow: 0 1.6rem 5rem rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  .close-modal-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    background: #f8f8f9;
+    border: none;
+    cursor: pointer;
+  }
+
+  .modal-section-box {
+    background: #f8f8f9;
+    border: 0.12rem solid $border;
+    border-radius: 1.8rem;
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+
+    h3 {
+      margin: 0;
+      font-family: $font-heading;
+      font-size: 1.6rem;
+      color: $text-heading;
+    }
+
+    .fulfillment-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+
+      div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+
+        strong {
+          font-size: 1.15rem;
+          color: $text-secondary;
+        }
+
+        p {
+          margin: 0;
+          font-size: 1.3rem;
+          font-weight: 700;
+          color: $text-heading;
+        }
+
+        &.full-col {
+          grid-column: 1 / -1;
+        }
+      }
+    }
+
+    .modal-items-table {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .modal-item-row {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 0.1rem solid #e2e8f0;
+
+        img {
+          width: 5rem;
+          height: 5rem;
+          object-fit: cover;
+          border-radius: 1rem;
+        }
+
+        .item-meta {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+
+          strong {
+            font-size: 1.3rem;
+            color: $text-heading;
+          }
+
+          span {
+            font-size: 1.15rem;
+            color: $text-secondary;
+          }
+        }
+
+        .item-price-qty {
+          display: flex;
+          align-items: center;
+          gap: 1.2rem;
+
+          span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: $text-secondary;
+          }
+
+          strong {
+            font-size: 1.4rem;
+            color: $primary;
+          }
+        }
+      }
     }
   }
 }
 
 @include tablet-down {
-  .orders-page { width: min(100% - 3rem, 56rem); }
-  .order-card { align-items: flex-start; flex-direction: column; }
-  .order-card-side { justify-items: start; }
-  .order-tabs button { padding: 1rem .8rem; }
+  .orders-page .orders-list .order-card .order-card-header {
+    flex-direction: column;
+    gap: 1rem;
 
-  .order-modal-backdrop {
-    padding: 1.5rem;
-    
-    .order-modal-card {
-      padding: 2.2rem 1.8rem;
-      max-height: 85vh;
+    .order-card-side {
+      align-items: flex-start;
     }
   }
 }
-
-@include mobile {
-  .orders-page { width: 100%; padding: 7rem 1.5rem 4rem; }
-  .order-tabs { flex-wrap: wrap; gap: 0.5rem; }
-  .order-tabs button { padding: 0.8rem 0.6rem; font-size: $font-xs; }
-
-  .order-modal-backdrop {
-    padding: 0;
-    align-items: flex-end;
-
-    .order-modal-card {
-      max-width: 100%;
-      border-radius: 2.4rem 2.4rem 0 0;
-      padding: 2.4rem 1.6rem 3rem;
-      max-height: 90vh;
-      animation: mobileSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-
-      &::before {
-        content: '';
-        display: block;
-        width: 4rem;
-        height: 0.45rem;
-        background: #cbd5e1;
-        border-radius: 1rem;
-        margin: -1rem auto 1.4rem;
-      }
-    }
-  }
-
-  .fulfillment-info-grid {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  .modal-items-table {
-    .table-header {
-      display: none !important;
-    }
-
-    .table-row {
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: stretch !important;
-      gap: 0.8rem !important;
-      padding: 1rem 0 !important;
-      border-bottom: 0.1rem solid #e2e8f0 !important;
-
-      &:last-child {
-        border-bottom: none !important;
-      }
-
-      .item-col {
-        justify-content: space-between !important;
-
-        .mobile-only-cost {
-          display: block !important;
-          font-size: 1.4rem;
-        }
-      }
-
-      .row-meta-mobile {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        font-size: 1.2rem !important;
-
-        .desktop-only-cost {
-          display: none !important;
-        }
-      }
-    }
-  }
-}
-
-@keyframes mobileSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-

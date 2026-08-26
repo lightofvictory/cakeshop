@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import Header from '../../Components/Header/Header';
 import { assets } from '../../assets/assets.js';
+import { useSettings } from '../../context/SettingsContext';
 import './Home.scss';
 
-const cakes = [
+const initialCakes = [
   {
     id: 'cake-1',
     name: 'Birthday Truffle Cake',
@@ -15,6 +17,7 @@ const cakes = [
     discount: '20% OFF',
     originalPrice: '₹899',
     price: '₹699',
+    category: 'Cake Item',
     desc: 'Rich cocoa sponge layered with silky dark chocolate ganache.'
   },
   {
@@ -27,6 +30,7 @@ const cakes = [
     discount: '15% OFF',
     originalPrice: '₹2,899',
     price: '₹2,499',
+    category: 'Cake Item',
     desc: 'Multi-tiered floral centerpiece crafted with gourmet cream.'
   },
   {
@@ -39,6 +43,7 @@ const cakes = [
     discount: '18% OFF',
     originalPrice: '₹1,599',
     price: '₹1,299',
+    category: 'Cake Item',
     desc: 'Tailored flavors and bespoke hand-crafted artistic decorations.'
   },
   {
@@ -51,6 +56,7 @@ const cakes = [
     discount: '25% OFF',
     originalPrice: '₹799',
     price: '₹599',
+    category: 'Deserts Item',
     desc: 'Decadent dark cocoa mousse topped with chocolate curls.'
   },
   {
@@ -63,6 +69,7 @@ const cakes = [
     discount: '20% OFF',
     originalPrice: '₹999',
     price: '₹799',
+    category: 'Cake Item',
     desc: 'Light vanilla chiffon topped with fresh seasonal berries and fruits.'
   },
   {
@@ -75,22 +82,58 @@ const cakes = [
     discount: '15% OFF',
     originalPrice: '₹599',
     price: '₹499',
+    category: 'Snakes Item',
     desc: 'Miniature indulgence cakes perfect for sweet cravings.'
   }
 ];
 
-const categories = ['All', 'Cakes', 'Snacks', 'Milkshakes', 'Pastries', 'Desserts', 'Cupcakes'];
+const defaultCategories = ['All', 'Cake Item', 'Snakes Item', 'Deserts Item', 'Salad Item', 'Pure Veg', 'Pasta Item', 'Cookies Item', 'Sweet Items'];
 
 const Home = () => {
+  const { settings } = useSettings();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [items, setItems] = useState(initialCakes);
+  const [categoriesList, setCategoriesList] = useState(defaultCategories);
   const [selectedWeights, setSelectedWeights] = useState({});
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [customModalItem, setCustomModalItem] = useState(null);
   const [customWeightVal, setCustomWeightVal] = useState('6');
 
+  useEffect(() => {
+    const fetchBackendItems = async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/api/items');
+        if (res.data && res.data.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          const formatted = res.data.data.map((item) => ({
+            id: item._id,
+            name: item.name,
+            image: item.image.startsWith('http') ? item.image : `http://localhost:3000/images/${item.image}`,
+            deliveryTime: '25 MINS',
+            weight: '1 Kg',
+            rating: '4.9',
+            discount: '15% OFF',
+            originalPrice: `₹${Number(item.price) + 150}`,
+            price: `₹${item.price}`,
+            category: item.category,
+            desc: item.description,
+          }));
+
+          setItems(formatted);
+
+          const dynamicCats = Array.from(new Set(res.data.data.map((i) => i.category)));
+          const combined = Array.from(new Set(['All', ...defaultCategories, ...dynamicCats]));
+          setCategoriesList(combined);
+        }
+      } catch (err) {
+        console.log('Backend server unreachable or no items yet, using initial items:', err.message);
+      }
+    };
+    fetchBackendItems();
+  }, []);
+
   const getScaledPrices = (item) => {
-    const basePrice = parseInt(item.price.replace(/[^0-9]/g, '')) || 699;
-    const baseOrig = parseInt(item.originalPrice.replace(/[^0-9]/g, '')) || (basePrice + 200);
+    const basePrice = parseInt(String(item.price).replace(/[^0-9]/g, '')) || 699;
+    const baseOrig = parseInt(String(item.originalPrice).replace(/[^0-9]/g, '')) || (basePrice + 200);
     const weightKey = selectedWeights[item.id] || '1';
 
     if (weightKey === 'custom') {
@@ -112,15 +155,27 @@ const Home = () => {
     };
   };
 
+  const filteredItems = activeCategory === 'All'
+    ? items
+    : items.filter((item) => item.category === activeCategory || (activeCategory === 'Cakes' && item.category === 'Cake Item') || (activeCategory === 'Snacks' && item.category === 'Snakes Item'));
+
   return (
     <>
-      <Header />
+      {/* Top Announcement Bar from Home Settings */}
+      {settings?.showPromo !== false && settings?.promoMarqueeText && (
+        <div style={{ background: '#f43f5e', color: '#ffffff', textAlign: 'center', padding: '8px 16px', fontWeight: 800, fontSize: '13px' }}>
+          {settings.promoMarqueeText}
+        </div>
+      )}
+
+      {settings?.showHero !== false && <Header />}
+
       <main className="cakezone-home">
         <section className="about-block section-shell">
           <div className="about-image"><img src={assets.cake2} alt="Mr. Pastry celebration cake" /></div>
           <div className="about-copy">
             <p className="eyebrow">About us</p>
-            <h2>Welcome to <span>Mr. Pastry</span></h2>
+            <h2>Welcome to <span>{settings?.shopName || 'Mr. Pastry'}</span></h2>
             <p className="lead">Every celebration deserves a cake that feels as special as the moment itself.</p>
             <p>We bake fresh, beautiful cakes with carefully selected ingredients and flavours your guests will remember. From birthdays to the biggest day of your life, our kitchen is here for the sweet part.</p>
             <div className="benefit-grid">
@@ -134,11 +189,11 @@ const Home = () => {
           <div className="section-shell">
             <div className="title-center">
               <p className="eyebrow">Menu & pricing</p>
-              <h2>Explore Our Cakes</h2>
+              <h2>{settings?.menuTitle || 'Explore Our Category Selection'}</h2>
             </div>
             <div className="category-marquee" aria-label="Our menu categories">
               <div className="category-track">
-                {categories.map((category) => (
+                {categoriesList.map((category) => (
                   <button 
                     key={category} 
                     type="button"
@@ -151,7 +206,7 @@ const Home = () => {
               </div>
             </div>
             <div className="product-grid">
-              {cakes.map((item) => {
+              {filteredItems.map((item) => {
                 const scaled = getScaledPrices(item);
                 const currentWeight = selectedWeights[item.id] || '1';
 
@@ -167,7 +222,6 @@ const Home = () => {
                       <h3 className="card-item-name">{item.name}</h3>
                       <p className="card-item-desc">{item.desc}</p>
                       
-                      {/* Custom Popover Weight Selector: Shows COUNT ONLY (e.g. 1 Kg, 2 Kg, 6 Kg) with beautiful dropdown menu */}
                       <div className="custom-weight-dropdown-wrapper">
                         <button 
                           type="button" 
@@ -231,7 +285,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Custom Weight / Size Modal */}
+        {/* Custom Weight Modal */}
         {customModalItem && (
           <div className="custom-weight-modal-backdrop" onClick={() => setCustomModalItem(null)}>
             <div className="custom-weight-modal-box" onClick={(e) => e.stopPropagation()}>
@@ -293,45 +347,27 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="discount-block">
-          <div>
-            <p>Seasonal special</p>
-            <h2>Sweeten your celebration with a custom cake.</h2>
-            <Link to="/contact" className="pink-button">Order now</Link>
-          </div>
-        </section>
-
-        <section className="combo-block section-shell">
-          <img src={assets.cake1} alt="Layered specialty cake" />
-          <div>
-            <p className="eyebrow">Special combo pack</p>
-            <h2>Super Crispy Cakes</h2>
-            <p>Choose a delightful combination of crowd-pleasing flavours, freshly made and packed with care for sharing.</p>
-            <div>
-              <Link to="/menu" className="pink-button">Shop now</Link>
-              <Link to="/contact" className="outline-button">Read more</Link>
+        {/* Testimonials */}
+        {settings?.showTestimonials !== false && (
+          <section className="testimonial-block">
+            <div className="section-shell">
+              <div className="title-center">
+                <p className="eyebrow">Testimonial</p>
+                <h2>Our Clients Say</h2>
+              </div>
+              <div className="quotes">
+                <blockquote>
+                  “The cake was beautiful, delicious, and the first thing everyone asked us about after the party.”
+                  <footer>— Ananya R., Birthday celebration</footer>
+                </blockquote>
+                <blockquote>
+                  “Mr. Pastry made our wedding cake exactly how we imagined it. Every detail was perfect.”
+                  <footer>— Karan & Meera, Wedding</footer>
+                </blockquote>
+              </div>
             </div>
-          </div>
-        </section>
-
-        <section className="testimonial-block">
-          <div className="section-shell">
-            <div className="title-center">
-              <p className="eyebrow">Testimonial</p>
-              <h2>Our Clients Say</h2>
-            </div>
-            <div className="quotes">
-              <blockquote>
-                “The cake was beautiful, delicious, and the first thing everyone asked us about after the party.”
-                <footer>— Ananya R., Birthday celebration</footer>
-              </blockquote>
-              <blockquote>
-                “Mr. Pastry made our wedding cake exactly how we imagined it. Every detail was perfect.”
-                <footer>— Karan & Meera, Wedding</footer>
-              </blockquote>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
     </>
   );

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { 
   ShoppingCartOutlined, 
   UserOutlined, 
@@ -30,6 +31,7 @@ const Navbar = () => {
   const location = useLocation();
   const { itemCount, orderPreference, openPreferenceModal } = useCart();
   const { user } = useAuth();
+  const { settings } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +41,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile drawer on route change
   useEffect(() => {
     setIsMobileNavOpen(false);
   }, [location]);
@@ -67,6 +68,7 @@ const Navbar = () => {
   const modeLabel = getModeLabel();
   const dateText = orderPreference?.formattedDate || 'Today';
   const timeText = orderPreference?.formattedTime || '10:00 AM - 12:00 PM';
+  const logoImg = settings?.logo ? `http://localhost:3000/images/${settings.logo}` : assets.pastry;
 
   return (
     <nav className={`navbar-container ${isScrolled ? "scrolled" : ""} ${location.pathname === '/' ? 'home-navbar' : 'page-navbar'}`}>
@@ -75,11 +77,10 @@ const Navbar = () => {
         {/* Left Section: Logo & Order Preference Pill */}
         <div className="navbar-left-group">
           <div className="navbar-brand">
-            <img src={assets.pastry} alt="Mr. Pastry Logo" className="navbar-logo" />
-            <Link to="/">Mr. Pastry</Link>
+            <img src={logoImg} alt="Logo" className="navbar-logo" style={{ objectFit: 'cover', borderRadius: '8px' }} />
+            <Link to="/">{settings?.shopName || 'Mr. Pastry'}</Link>
           </div>
 
-          {/* Clean Order Preference Header Pill */}
           <button 
             type="button" 
             className="order-pref-header-btn" 
@@ -97,7 +98,7 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Center Section: Desktop Navigation Links */}
+        {/* Center Section: Navigation Links */}
         <ul className="navbar-menu desktop-only-menu">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -115,7 +116,7 @@ const Navbar = () => {
           })}
         </ul>
 
-        {/* Right Section: Actions & Mobile Hamburger */}
+        {/* Right Section: Actions */}
         <div className="navbar-actions">
           <Link 
             to={user ? "/profile" : "/signin"} 
@@ -138,7 +139,6 @@ const Navbar = () => {
             )}
           </Link>
 
-          {/* Mobile Hamburger Button */}
           <button 
             type="button" 
             className="mobile-hamburger-btn"
@@ -151,7 +151,7 @@ const Navbar = () => {
 
       </div>
 
-      {/* Mobile & Tablet Dedicated Order Preference Bar */}
+      {/* Mobile Order Bar */}
       <div className="mobile-order-bar-container">
         <button 
           type="button" 

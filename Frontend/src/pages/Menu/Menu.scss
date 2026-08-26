@@ -1,5 +1,39 @@
 @use '../../variables.scss' as *;
 
+/* Gourmet Toast Notification Styling */
+.gourmet-toast-notification {
+  border-radius: 1.8rem !important;
+  border: 0.12rem solid rgba($primary, 0.25) !important;
+  background: #ffffff !important;
+  box-shadow: 0 1rem 3.5rem rgba(43, 27, 31, 0.18) !important;
+  padding: 1.4rem 1.8rem !important;
+
+  .ant-notification-notice-message {
+    font-family: $font-heading !important;
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: $text-heading !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  .ant-notification-notice-description {
+    font-family: $font-body !important;
+    font-size: 1.25rem !important;
+    color: $text-primary !important;
+    line-height: 1.5 !important;
+  }
+
+  .ant-notification-notice-close {
+    top: 1.4rem !important;
+    right: 1.4rem !important;
+    color: $text-secondary !important;
+
+    &:hover {
+      color: $primary !important;
+    }
+  }
+}
+
 /* Global Custom Weight Dropdown Selector */
 .custom-weight-dropdown-wrapper {
   position: relative;
@@ -20,8 +54,6 @@
     cursor: pointer;
     transition: $transition;
     outline: none;
-    appearance: none;
-    -webkit-appearance: none;
 
     &:hover {
       background: #ffe4e9 !important;
@@ -36,7 +68,6 @@
     .pink-arrow {
       font-size: 1.1rem;
       color: #ff1493 !important;
-      transition: transform 0.2s ease;
     }
   }
 
@@ -58,7 +89,6 @@
     padding: 0.6rem !important;
     margin: 0 !important;
     list-style: none !important;
-    list-style-type: none !important;
     z-index: 99999 !important;
 
     li {
@@ -72,9 +102,6 @@
       font-weight: 700 !important;
       color: $text-heading !important;
       cursor: pointer;
-      transition: $transition;
-      list-style: none !important;
-      list-style-type: none !important;
 
       &:hover {
         background: #fff0f3 !important;
@@ -84,11 +111,6 @@
       &.active {
         background: $primary !important;
         color: #ffffff !important;
-
-        .check-mark {
-          color: #ffffff !important;
-          font-weight: 900 !important;
-        }
       }
 
       &.custom-option {
@@ -97,15 +119,6 @@
         padding-top: 0.8rem;
         color: $primary !important;
         font-weight: 800 !important;
-
-        &:hover {
-          background: #fff0f3 !important;
-        }
-
-        &.active {
-          background: $primary !important;
-          color: #ffffff !important;
-        }
       }
     }
   }
@@ -113,7 +126,7 @@
 
 .menu-page-container {
   background-color: $bg-main;
-  padding: 6rem 1.5rem;
+  padding: 4rem 1.5rem 6rem;
   position: relative;
   overflow-x: hidden;
   max-width: 100vw;
@@ -144,8 +157,8 @@
   }
 
   .menu-page-content {
-    max-width: 120rem;
-    width: min(120rem, calc(100% - 3.2rem));
+    max-width: 124rem;
+    width: min(124rem, calc(100% - 3.2rem));
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -156,35 +169,100 @@
 
   .menu-section-header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
 
     .menu-badge {
       color: $primary;
       font-family: $font-body;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.2em;
-      font-size: $font-xs;
+      font-size: 1.2rem;
       text-transform: uppercase;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.6rem;
       display: block;
     }
 
     .menu-title {
       font-family: $font-heading;
-      font-size: 3.2rem;
+      font-size: 3.6rem;
       font-weight: 800;
       color: $text-heading;
-      
+      margin: 0 0 0.6rem;
+
       span {
-        background: linear-gradient(to right, $primary, $accent);
+        background: linear-gradient(135deg, $primary, $accent);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
     }
+
+    .menu-subtitle {
+      font-family: $font-body;
+      font-size: 1.4rem;
+      color: $text-secondary;
+      margin: 0 auto;
+      max-width: 60rem;
+    }
   }
 
-  /* Mobile Filter Row */
+  /* Sticky Top Category Navigation Bar */
+  .sticky-menu-nav-bar {
+    position: sticky;
+    top: 7rem;
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(1rem);
+    border: 0.12rem solid rgba($primary, 0.15);
+    border-radius: 2rem;
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 0.8rem 2.4rem rgba(43, 27, 31, 0.06);
+
+    .nav-tabs-scroll-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 0.2rem;
+
+      &::-webkit-scrollbar {
+        height: 0.3rem;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba($primary, 0.2);
+        border-radius: 1rem;
+      }
+
+      .sticky-nav-tab {
+        padding: 0.8rem 1.8rem;
+        background: #f8f8f9;
+        border: 0.1rem solid transparent;
+        border-radius: $radius-pill;
+        font-family: $font-body;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: $text-primary;
+        cursor: pointer;
+        transition: $transition;
+        flex-shrink: 0;
+
+        &:hover {
+          background: #fff0f3;
+          color: $primary;
+        }
+
+        &.active {
+          background: linear-gradient(135deg, $primary, $accent);
+          color: #ffffff;
+          box-shadow: 0 0.4rem 1.4rem rgba($primary, 0.3);
+        }
+      }
+    }
+  }
+
+  /* Mobile Filter Bar Row */
   .mobile-filter-bar-row {
     display: none;
     align-items: center;
@@ -220,7 +298,7 @@
     }
   }
 
-  /* 2-Column Layout */
+  /* 2-Column Catalog Layout */
   .menu-catalog-layout {
     display: flex;
     gap: 3rem;
@@ -231,7 +309,7 @@
       width: 27rem;
       flex-shrink: 0;
       position: sticky;
-      top: 9rem;
+      top: 15rem;
       align-self: flex-start;
       z-index: 25;
     }
@@ -328,7 +406,7 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    max-height: calc(100vh - 11rem);
+    max-height: calc(100vh - 17rem);
     overflow-y: auto;
 
     &::-webkit-scrollbar {
@@ -366,9 +444,6 @@
         font-size: 1.1rem;
         font-weight: 800;
         cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
 
         &:hover {
           background: $primary;
@@ -496,20 +571,43 @@
     gap: 4rem;
   }
 
+  /* Category Section */
   .menu-category-section {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
 
-    .category-title {
-      font-family: $font-heading;
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: $primary;
+    .section-title-wrapper {
       margin-bottom: 2rem;
-      font-style: italic;
-      letter-spacing: 0.05em;
+
+      .category-title {
+        font-family: $font-heading;
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: $text-heading;
+        margin: 0 0 0.4rem;
+      }
+
+      .category-subtitle {
+        font-family: $font-body;
+        font-size: 1.3rem;
+        color: $text-secondary;
+      }
+    }
+
+    .subcategory-block {
+      width: 100%;
+      margin-bottom: 3rem;
+
+      .subcategory-title {
+        font-family: $font-heading;
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: $primary;
+        margin-bottom: 1.6rem;
+        font-style: italic;
+      }
     }
 
     .cakes-grid {
@@ -519,93 +617,917 @@
       gap: 2rem;
     }
   }
-}
 
-/* Mobile Filter Slide Drawer */
-.mobile-filter-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(0.3rem);
-  z-index: 1000;
-  display: flex;
-  justify-content: flex-start;
+  /* Custom Cake Banner CTA */
+  .custom-cake-hero-banner {
+    width: 100%;
+    background: linear-gradient(135deg, #fff0f3, #ffe4e9);
+    border: 0.15rem solid rgba($primary, 0.25);
+    border-radius: 2.4rem;
+    padding: 3rem 2.4rem;
+    margin-bottom: 4rem;
+    box-shadow: 0 0.8rem 3rem rgba($primary, 0.1);
+    box-sizing: border-box;
 
-  .mobile-filter-drawer {
-    width: 85%;
-    max-width: 34rem;
-    height: 100%;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.25);
-    animation: slideInLeft 0.3s ease-out;
-
-    .mobile-filter-drawer-header {
+    .banner-text {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.6rem 2rem;
-      border-bottom: 0.1rem solid #f0f0f2;
-      font-family: $font-heading;
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: $text-heading;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
 
-      .close-btn {
-        background: none;
-        border: none;
-        font-size: 1.6rem;
-        cursor: pointer;
-        color: $text-secondary;
+      .sparkle-badge {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: $primary;
+        background: #ffffff;
+        padding: 0.4rem 1.2rem;
+        border-radius: $radius-pill;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
-    }
 
-    .mobile-filter-drawer-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.6rem;
-
-      .menu-filter-sidebar {
-        border: none;
-        box-shadow: none;
-        padding: 0;
-        max-height: none;
-
-        .sidebar-header {
-          display: none;
-        }
+      h3 {
+        margin: 0;
+        font-family: $font-heading;
+        font-size: 2.6rem;
+        font-weight: 800;
+        color: $text-heading;
+        line-height: 1.3;
       }
-    }
 
-    .mobile-filter-drawer-footer {
-      padding: 1.4rem 1.6rem;
-      border-top: 0.1rem solid #f0f0f2;
+      p {
+        margin: 0;
+        font-family: $font-body;
+        font-size: 1.4rem;
+        color: $text-primary;
+        max-width: 68rem;
+        line-height: 1.6;
+      }
 
-      .apply-filter-btn {
-        width: 100%;
-        min-height: 4.6rem;
-        background: $primary;
+      .request-custom-btn {
+        margin-top: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 1.2rem 2.6rem;
+        background: linear-gradient(135deg, $primary, $accent);
         color: #ffffff;
         border: none;
         border-radius: $radius-pill;
         font-family: $font-body;
-        font-size: 1.35rem;
+        font-size: 1.4rem;
         font-weight: 800;
         cursor: pointer;
+        box-shadow: 0 0.8rem 2.4rem rgba($primary, 0.35);
+        transition: $transition;
+
+        &:hover {
+          transform: translateY(-0.2rem);
+          box-shadow: 0 1rem 3rem rgba($primary, 0.5);
+        }
+      }
+    }
+  }
+
+  /* Sample Product Card */
+  .sample-cake-card {
+    background: #ffffff;
+    border: 0.12rem solid $border;
+    border-radius: 2rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0.6rem 2rem rgba(0, 0, 0, 0.05);
+    transition: $transition;
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-0.6rem);
+      box-shadow: 0 1.2rem 3.5rem rgba(43, 27, 31, 0.14);
+      border-color: rgba($primary, 0.3);
+    }
+
+    .card-image-box {
+      position: relative;
+      width: 100%;
+      height: 18rem;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+      }
+
+      &:hover img {
+        transform: scale(1.06);
+      }
+
+      .diet-pill {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: $radius-pill;
+        font-size: 1.1rem;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.95);
+        color: #2e7d32;
+        box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.1);
+      }
+
+      .rating-pill {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        padding: 0.3rem 0.75rem;
+        background: rgba(0, 0, 0, 0.7);
+        color: #ffb400;
+        border-radius: $radius-pill;
+        font-size: 1.15rem;
+        font-weight: 800;
+      }
+
+      .quick-add-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 3.4rem;
+        height: 3.4rem;
+        border-radius: 50%;
+        background: #ffffff;
+        color: $primary;
+        border: 0.12rem solid $primary;
+        font-size: 1.8rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.15);
+        transition: $transition;
+
+        &:hover {
+          background: $primary;
+          color: #ffffff;
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    .card-content-box {
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      flex: 1;
+
+      .card-item-name {
+        margin: 0;
+        font-family: $font-heading;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: $text-heading;
+        line-height: 1.3;
+      }
+
+      .card-item-desc {
+        margin: 0;
+        font-family: $font-body;
+        font-size: 1.2rem;
+        color: $text-secondary;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .variant-pills-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.4rem;
+
+        .variant-pill {
+          padding: 0.35rem 0.85rem;
+          background: #f8f8f9;
+          border: 0.1rem solid $border;
+          border-radius: $radius-pill;
+          font-family: $font-body;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: $text-primary;
+          cursor: pointer;
+
+          &.active {
+            background: #fff0f3;
+            color: $primary;
+            border-color: $primary;
+            font-weight: 800;
+          }
+        }
+      }
+
+      .card-bottom-row {
+        margin-top: auto;
+        padding-top: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .price-stack {
+          display: flex;
+          align-items: baseline;
+          gap: 0.6rem;
+
+          .current-price {
+            font-family: $font-body;
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: $primary;
+          }
+
+          .original-price {
+            font-size: 1.2rem;
+            color: $text-secondary;
+            text-decoration: line-through;
+          }
+        }
+
+        .add-cart-btn-sm {
+          padding: 0.5rem 1.4rem;
+          background: $primary;
+          color: #ffffff;
+          border: none;
+          border-radius: $radius-pill;
+          font-family: $font-body;
+          font-size: 1.2rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: $transition;
+
+          &:hover {
+            background: $primary-hover;
+          }
+        }
       }
     }
   }
 }
 
-@keyframes slideInLeft {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+/* ======================================================
+   ITEM QUICK VIEW MODAL UI (`.cake-details-modal`)
+   ====================================================== */
+.cake-details-modal {
+  .ant-modal-content {
+    padding: 2.8rem;
+    border-radius: 2.8rem;
+    border: 0.15rem solid rgba($primary, 0.15);
+    box-shadow: 0 1.2rem 4rem rgba(0, 0, 0, 0.18);
+    background: #ffffff;
+  }
+
+  .ant-modal-close {
+    top: 2rem;
+    right: 2rem;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    background: #f8f8f9;
+    color: $text-heading;
+
+    &:hover {
+      background: #fff0f3;
+      color: $primary;
+    }
+  }
+
+  .cake-modal-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+
+    .cake-modal-main-grid {
+      display: grid;
+      grid-template-columns: 34rem 1fr;
+      gap: 3rem;
+      align-items: start;
+
+      /* Left Image Column */
+      .modal-image-col {
+        width: 100%;
+
+        .modal-img-wrapper {
+          position: relative;
+          width: 100%;
+          height: 32rem;
+          border-radius: 2.2rem;
+          overflow: hidden;
+          box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.08);
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .badge-row {
+            position: absolute;
+            top: 1.2rem;
+            left: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+
+            .modal-badge {
+              padding: 0.4rem 1rem;
+              border-radius: $radius-pill;
+              font-size: 1.15rem;
+              font-weight: 800;
+              backdrop-filter: blur(0.8rem);
+              box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.12);
+
+              &.eggless, &.veg {
+                background: rgba(255, 255, 255, 0.95);
+                color: #2e7d32;
+              }
+
+              &.rating {
+                background: rgba(0, 0, 0, 0.75);
+                color: #ffb400;
+              }
+            }
+          }
+        }
+      }
+
+      /* Right Details Column */
+      .modal-details-col {
+        display: flex;
+        flex-direction: column;
+        gap: 1.4rem;
+
+        .modal-item-title {
+          margin: 0;
+          font-family: $font-heading;
+          font-size: 2.8rem;
+          font-weight: 800;
+          color: $text-heading;
+          line-height: 1.2;
+        }
+
+        .modal-item-desc {
+          margin: 0;
+          font-size: 1.35rem;
+          color: $text-secondary;
+          line-height: 1.6;
+        }
+
+        .modal-price-row {
+          display: flex;
+          align-items: baseline;
+          gap: 1rem;
+          padding-bottom: 0.6rem;
+          border-bottom: 0.1rem solid #f0f0f2;
+
+          .modal-current-price {
+            font-family: $font-heading;
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: $primary;
+          }
+
+          .modal-orig-price {
+            font-size: 1.5rem;
+            color: $text-secondary;
+            text-decoration: line-through;
+          }
+
+          .price-inclusive-text {
+            font-size: 1.15rem;
+            color: #888888;
+          }
+        }
+
+        .modal-option-block {
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+
+          .option-label {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: $text-heading;
+          }
+
+          .modal-variant-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+
+            .modal-v-pill {
+              padding: 0.6rem 1.6rem;
+              background: #f8f8f9;
+              border: 0.12rem solid $border;
+              border-radius: $radius-pill;
+              font-family: $font-body;
+              font-size: 1.25rem;
+              font-weight: 700;
+              color: $text-heading;
+              cursor: pointer;
+              transition: $transition;
+
+              &:hover {
+                background: #fff0f3;
+                color: $primary;
+              }
+
+              &.active {
+                background: #fff0f3;
+                color: $primary;
+                border-color: $primary;
+                font-weight: 800;
+              }
+            }
+          }
+
+          .cake-message-input {
+            border-radius: 1.2rem;
+            padding: 0.8rem 1.2rem;
+            font-size: 1.3rem;
+          }
+        }
+
+        .modal-specs-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          background: #f8f8f9;
+          padding: 1rem;
+          border-radius: 1.4rem;
+
+          .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: $text-primary;
+
+            span {
+              color: $text-heading;
+            }
+          }
+        }
+
+        .modal-add-cart-btn {
+          height: 4.8rem !important;
+          border-radius: $radius-pill !important;
+          background: linear-gradient(135deg, $primary, $accent) !important;
+          font-family: $font-body !important;
+          font-size: 1.5rem !important;
+          font-weight: 800 !important;
+          box-shadow: 0 0.8rem 2.4rem rgba($primary, 0.35) !important;
+          border: none !important;
+
+          &:hover {
+            transform: translateY(-0.2rem);
+            box-shadow: 0 1rem 3rem rgba($primary, 0.5) !important;
+          }
+        }
+      }
+    }
+
+    /* Recommended Addons Section */
+    .modal-addons-section {
+      background: #fff0f3;
+      border: 0.12rem solid rgba($primary, 0.2);
+      border-radius: 2rem;
+      padding: 1.6rem 2rem;
+
+      .addons-header-text {
+        margin-bottom: 1.2rem;
+
+        h4 {
+          margin: 0 0 0.2rem;
+          font-family: $font-heading;
+          font-size: 1.6rem;
+          font-weight: 800;
+          color: $text-heading;
+        }
+
+        span {
+          font-size: 1.2rem;
+          color: $text-secondary;
+        }
+      }
+
+      .addons-scroll-row {
+        display: flex;
+        gap: 1.2rem;
+        overflow-x: auto;
+        padding-bottom: 0.6rem;
+
+        &::-webkit-scrollbar {
+          height: 0.4rem;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: rgba($primary, 0.3);
+          border-radius: 1rem;
+        }
+
+        .addon-card-mini {
+          flex-shrink: 0;
+          width: 14rem;
+          background: #ffffff;
+          border: 0.1rem solid $border;
+          border-radius: 1.4rem;
+          padding: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+          align-items: center;
+          text-align: center;
+
+          img {
+            width: 5rem;
+            height: 5rem;
+            object-fit: cover;
+            border-radius: 1rem;
+          }
+
+          .addon-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+
+            strong {
+              font-size: 1.15rem;
+              color: $text-heading;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 12rem;
+            }
+
+            span {
+              font-size: 1.2rem;
+              font-weight: 800;
+              color: $primary;
+            }
+          }
+
+          .addon-add-btn {
+            width: 100%;
+            padding: 0.4rem;
+            background: #fff0f3;
+            color: $primary;
+            border: 0.1rem solid rgba($primary, 0.4);
+            border-radius: $radius-pill;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+
+            &.added {
+              background: #2e7d32;
+              color: #ffffff;
+              border-color: #2e7d32;
+            }
+          }
+        }
+      }
+    }
+
+    /* Review Section */
+    .review-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+      padding-top: 1rem;
+      border-top: 0.1rem solid #f0f0f2;
+
+      .review-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        h3 {
+          margin: 0;
+          font-family: $font-heading;
+          font-size: 1.9rem;
+          font-weight: 800;
+          color: $text-heading;
+        }
+
+        .review-count-pill {
+          padding: 0.3rem 0.9rem;
+          background: #fff0f3;
+          color: $primary;
+          border-radius: $radius-pill;
+          font-size: 1.2rem;
+          font-weight: 800;
+        }
+      }
+
+      .reviews-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        max-height: 22rem;
+        overflow-y: auto;
+        padding-right: 0.4rem;
+
+        &::-webkit-scrollbar {
+          width: 0.4rem;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 1rem;
+        }
+
+        .review-item-card {
+          display: flex;
+          gap: 1.2rem;
+          padding: 1.2rem;
+          background: #f8f8f9;
+          border-radius: 1.6rem;
+
+          .review-user-avatar {
+            width: 3.8rem;
+            height: 3.8rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, $primary, $accent);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+
+          .review-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+
+            .review-card-top {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+
+              .user-meta {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+
+                .user-name {
+                  font-size: 1.3rem;
+                  color: $text-heading;
+                }
+
+                .verified-badge {
+                  color: #0284c7;
+                  font-weight: 800;
+                }
+              }
+
+              .review-stars-row {
+                color: #ffb400;
+                font-size: 1.2rem;
+              }
+            }
+
+            .review-comment-text {
+              margin: 0;
+              font-size: 1.25rem;
+              color: $text-primary;
+              line-height: 1.5;
+            }
+
+            .review-card-footer {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              font-size: 1.1rem;
+              color: $text-secondary;
+
+              .like-review-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1.15rem;
+                color: $text-secondary;
+
+                &.liked {
+                  color: $primary;
+                  font-weight: 800;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .review-input-box {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background: #ffffff;
+        border: 0.12rem solid $border;
+        border-radius: 1.8rem;
+        padding: 1.4rem;
+
+        .rate-your-review-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          font-size: 1.3rem;
+          font-weight: 800;
+          color: $text-heading;
+        }
+
+        .post-review-btn {
+          align-self: flex-end;
+          padding: 0.8rem 2rem;
+          background: $primary;
+          color: #ffffff;
+          border: none;
+          border-radius: $radius-pill;
+          font-family: $font-body;
+          font-size: 1.25rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: $transition;
+
+          &:hover {
+            background: $primary-hover;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Custom Cake Request Modal */
+.custom-cake-request-modal {
+  width: 720px !important;
+  max-width: 94vw !important;
+
+  .ant-modal-content {
+    padding: 2.4rem;
+    border-radius: 2.4rem;
+  }
+
+  .ant-modal-title {
+    font-family: $font-heading;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: $text-heading;
+  }
+
+  .custom-cake-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    margin-top: 1rem;
+
+    .form-subtitle {
+      margin: 0;
+      font-size: 1.3rem;
+      color: $text-secondary;
+      line-height: 1.5;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.4rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: $text-heading;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        padding: 0.9rem 1.2rem;
+        background: #f8f8f9;
+        border: 0.12rem solid $border;
+        border-radius: 1.2rem;
+        font-family: $font-body;
+        font-size: 1.3rem;
+        color: $text-heading;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+          border-color: $primary;
+          background: #ffffff;
+        }
+      }
+
+      .file-upload-box {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        input[type="file"] {
+          display: none;
+        }
+
+        .upload-label-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.8rem;
+          padding: 1.2rem;
+          background: #fff0f3;
+          border: 0.12rem dashed $primary;
+          border-radius: 1.4rem;
+          color: $primary;
+          font-weight: 800;
+          cursor: pointer;
+          text-align: center;
+        }
+
+        .img-preview-box {
+          display: flex;
+          align-items: center;
+          gap: 1.2rem;
+
+          img {
+            width: 6rem;
+            height: 6rem;
+            object-fit: cover;
+            border-radius: 1rem;
+            border: 0.1rem solid $border;
+          }
+
+          span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2e7d32;
+          }
+        }
+      }
+    }
+
+    .submit-custom-request-btn {
+      margin-top: 0.8rem;
+      width: 100%;
+      min-height: 4.8rem;
+      background: linear-gradient(135deg, $primary, $accent);
+      color: #ffffff;
+      border: none;
+      border-radius: $radius-pill;
+      font-family: $font-body;
+      font-size: 1.4rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0.8rem 2.4rem rgba($primary, 0.35);
+      transition: $transition;
+
+      &:hover {
+        transform: translateY(-0.2rem);
+        box-shadow: 0 1rem 3rem rgba($primary, 0.5);
+      }
+    }
+  }
 }
 
 @include tablet-down {
+  .cake-details-modal {
+    .cake-modal-wrapper .cake-modal-main-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+
+      .modal-image-col .modal-img-wrapper {
+        height: 24rem;
+      }
+    }
+  }
+
   .menu-page-container {
-    padding: 4.5rem 1rem;
+    padding: 3rem 1rem;
+
+    .sticky-menu-nav-bar {
+      top: 6rem;
+    }
 
     .mobile-filter-bar-row {
       display: flex;
@@ -621,689 +1543,63 @@
         gap: 1.6rem;
       }
     }
+
+    .custom-cake-request-modal .custom-cake-form .form-grid {
+      grid-template-columns: 1fr;
+    }
   }
 }
 
 @include mobile {
+  .cake-details-modal {
+    .ant-modal-content {
+      padding: 1.6rem;
+    }
+
+    .cake-modal-wrapper .cake-modal-main-grid {
+      grid-template-columns: 1fr;
+
+      .modal-image-col .modal-img-wrapper {
+        height: 20rem;
+      }
+
+      .modal-details-col {
+        .modal-item-title {
+          font-size: 2.2rem;
+        }
+        .modal-price-row .modal-current-price {
+          font-size: 2.2rem;
+        }
+      }
+    }
+  }
+
   .menu-page-container {
-    padding: 3.5rem 0.8rem;
+    padding: 2.5rem 0.8rem;
 
     .menu-page-content {
       width: calc(100% - 1.6rem);
     }
 
-    .mobile-filter-bar-row {
-      gap: 0.8rem;
+    .sticky-menu-nav-bar {
+      top: 5.5rem;
+      padding: 0.6rem 0.8rem;
+    }
 
-      .mobile-filter-toggle-btn {
-        padding: 0.65rem 1.2rem;
-        font-size: 1.15rem;
-        white-space: nowrap;
-      }
+    .custom-cake-hero-banner {
+      padding: 2rem 1.6rem;
 
-      .results-count-text {
-        font-size: 1.1rem;
-        white-space: nowrap;
+      .banner-text h3 {
+        font-size: 2rem;
       }
     }
 
     .menu-catalog-layout {
       .menu-main-products-column {
-        .results-summary-bar {
-          padding: 0.8rem 1rem;
-          gap: 0.6rem;
-          font-size: 1.15rem;
-
-          span {
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-
-          .clear-all-pill {
-            padding: 0.3rem 0.8rem;
-            font-size: 1.05rem;
-            white-space: nowrap;
-            flex-shrink: 0;
-          }
-        }
-
         .cakes-grid {
           grid-template-columns: repeat(2, 1fr);
-          gap: 1.2rem;
-        }
-      }
-    }
-  }
-}
-
-/* Cake Details Modal Responsive & Overflow Fixes */
-.cake-details-modal {
-  max-width: 90vw !important;
-
-  .ant-modal-content {
-    padding: 2rem;
-    border-radius: 2.4rem;
-    box-shadow: 0 1.2rem 4rem rgba(0, 0, 0, 0.18);
-    overflow: hidden;
-    max-height: 88vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .ant-modal-header {
-    margin-bottom: 1rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 0.1rem solid #f0f0f2;
-  }
-
-  .ant-modal-title {
-    color: $text-heading;
-    font-family: $font-heading;
-    font-size: 2.2rem;
-    font-weight: 800;
-  }
-
-  .cake-modal-content {
-    display: grid;
-    grid-template-columns: 22rem 1fr;
-    gap: 2rem;
-    overflow-y: auto;
-    max-height: calc(88vh - 7rem);
-    padding-right: 0.6rem;
-    box-sizing: border-box;
-
-    &::-webkit-scrollbar {
-      width: 0.5rem;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: rgba($primary, 0.25);
-      border-radius: 1rem;
-    }
-
-    > img {
-      width: 100%;
-      max-width: 100%;
-      height: 22rem;
-      object-fit: cover;
-      border-radius: 1.8rem;
-      border: 0.1rem solid $border;
-      box-sizing: border-box;
-    }
-
-    .cake-modal-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      min-width: 0;
-
-      .modal-price {
-        margin: 0;
-        color: $primary;
-        font-size: 2.4rem;
-        font-weight: 800;
-      }
-
-      .modal-weight-selector-row {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-
-        .weight-label {
-          font-size: 1.3rem;
-          font-weight: 700;
-          color: $text-heading;
-        }
-      }
-
-      .cake-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.6rem;
-
-        span {
-          padding: 0.35rem 0.8rem;
-          color: $primary;
-          background: #fff0f3;
-          border: 0.1rem solid rgba($primary, 0.2);
-          border-radius: $radius-pill;
-          font-size: 1.1rem;
-          font-weight: 800;
-          text-transform: uppercase;
-        }
-      }
-
-      p {
-        margin: 0;
-        color: $text-primary;
-        font-size: 1.3rem;
-        line-height: 1.6;
-        word-break: break-word;
-      }
-
-      .cake-specs {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.8rem;
-        margin: 0.6rem 0;
-
-        div {
-          padding: 0.8rem 0.6rem;
-          background: #f8f8f9;
-          border-radius: 1.2rem;
-          border: 0.1rem solid #f0f0f2;
-          text-align: center;
-        }
-
-        dt {
-          color: $text-secondary;
-          font-size: 1.05rem;
-          font-weight: 800;
-          text-transform: uppercase;
-        }
-
-        dd {
-          margin: 0.2rem 0 0;
-          color: $text-heading;
-          font-size: 1.25rem;
-          font-weight: 800;
-        }
-      }
-
-      .modal-rating {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        margin: 0.6rem 0;
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: $text-heading;
-
-        .ant-rate {
-          font-size: 2.2rem;
-          color: #ffb400;
-
-          .ant-rate-star-full {
-            color: #ffb400;
-            filter: drop-shadow(0 0.1rem 0.3rem rgba(255, 180, 0, 0.4));
-          }
-
-          .ant-rate-star-half {
-            .ant-rate-star-first {
-              color: #ffb400;
-            }
-          }
-        }
-
-        small {
-          color: $text-secondary;
-          font-size: 1.15rem;
-          font-weight: 600;
-        }
-      }
-
-      .ant-btn-primary {
-        min-height: 4.8rem;
-        background: $primary;
-        border-radius: $radius-pill;
-        font-family: $font-body;
-        font-size: 1.4rem;
-        font-weight: 800;
-        box-shadow: 0 0.6rem 2rem rgba($primary, 0.3);
-
-        &:hover {
-          background: $primary-hover;
-        }
-      }
-    }
-
-    .modal-addons-section {
-      margin: 1.2rem 0;
-      padding: 1.2rem;
-      background: #fff0f3;
-      border: 0.12rem solid rgba($primary, 0.2);
-      border-radius: 1.6rem;
-      width: 100%;
-      box-sizing: border-box;
-
-      h4 {
-        margin: 0 0 0.2rem;
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: $text-heading;
-      }
-
-      .addons-subtitle {
-        margin: 0 0 1rem;
-        font-size: 1.15rem;
-        color: $text-secondary;
-      }
-
-      .addons-scroll-row {
-        display: flex;
-        gap: 1rem;
-        overflow-x: auto;
-        padding-bottom: 0.6rem;
-        width: 100%;
-        box-sizing: border-box;
-
-        &::-webkit-scrollbar {
-          height: 0.4rem;
-        }
-        &::-webkit-scrollbar-thumb {
-          background: rgba($primary, 0.25);
-          border-radius: 1rem;
-        }
-
-        .addon-card-mini {
-          flex-shrink: 0;
-          width: 13rem;
-          background: #ffffff;
-          border: 0.1rem solid $border;
-          border-radius: 1.2rem;
-          padding: 0.8rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: 0.4rem;
-          box-sizing: border-box;
-
-          img {
-            width: 4.8rem;
-            height: 4.8rem;
-            max-width: 100%;
-            object-fit: cover;
-            border-radius: 0.8rem;
-          }
-
-          .addon-info {
-            width: 100%;
-
-            strong {
-              display: block;
-              font-size: 1.1rem;
-              color: $text-heading;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              width: 100%;
-            }
-
-            span {
-              font-size: 1.1rem;
-              font-weight: 800;
-              color: $primary;
-            }
-          }
-
-          .addon-add-btn {
-            width: 100%;
-            padding: 0.4rem 0;
-            background: $primary;
-            color: #ffffff;
-            border: none;
-            border-radius: $radius-pill;
-            font-family: $font-body;
-            font-size: 1.1rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: $transition;
-
-            &:hover {
-              background: $primary-hover;
-            }
-
-            &.added {
-              background: #2e7d32;
-            }
-          }
-        }
-      }
-    }
-
-    .review-section {
-      grid-column: 1 / -1;
-      padding-top: 1.8rem;
-      border-top: 0.12rem solid #f0f0f4;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 1.4rem;
-
-      .review-heading {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        h3 {
-          margin: 0;
-          font-family: $font-heading;
-          font-size: 1.7rem;
-          font-weight: 800;
-          color: $text-heading;
-          display: flex;
-          align-items: center;
-          gap: 0.6rem;
-        }
-
-        .review-count-pill {
-          padding: 0.35rem 1rem;
-          background: #fff0f3;
-          border: 0.1rem solid rgba($primary, 0.25);
-          border-radius: $radius-pill;
-          font-family: $font-body;
-          font-size: 1.15rem;
-          font-weight: 800;
-          color: $primary;
-        }
-      }
-
-      .reviews-list-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        max-height: 26rem;
-        overflow-y: auto;
-        padding-right: 0.4rem;
-
-        &::-webkit-scrollbar {
-          width: 0.4rem;
-        }
-        &::-webkit-scrollbar-thumb {
-          background: rgba($primary, 0.25);
-          border-radius: 1rem;
-        }
-
-        .no-reviews-box {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.8rem;
-          padding: 1.8rem 1.4rem;
-          background: linear-gradient(135deg, #fff5f7, #fff0f3);
-          border: 0.12rem dashed rgba($primary, 0.3);
-          border-radius: 1.6rem;
-          text-align: center;
-
-          .sparkle-icon {
-            font-size: 1.8rem;
-          }
-
-          p {
-            margin: 0;
-            font-family: $font-body;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: $text-heading;
-          }
-        }
-
-        .review-item-card {
-          display: flex;
-          align-items: flex-start;
-          gap: 1.2rem;
-          padding: 1.2rem 1.4rem;
-          background: #ffffff;
-          border: 0.1rem solid $border;
-          border-radius: 1.4rem;
-          box-shadow: 0 0.4rem 1.4rem rgba(0, 0, 0, 0.04);
-          transition: $transition;
-
-          &:hover {
-            border-color: rgba($primary, 0.3);
-            box-shadow: 0 0.6rem 2rem rgba($primary, 0.08);
-          }
-
-          .review-user-avatar {
-            width: 3.8rem;
-            height: 3.8rem;
-            border-radius: 50%;
-            background: linear-gradient(135deg, $primary, $accent);
-            color: #ffffff;
-            font-family: $font-body;
-            font-size: 1.3rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 0.4rem 1rem rgba($primary, 0.25);
-          }
-
-          .review-body {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-
-            .review-card-top {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              width: 100%;
-
-              .user-meta {
-                display: flex;
-                align-items: center;
-                gap: 0.8rem;
-
-                .user-name {
-                  font-family: $font-body;
-                  font-size: 1.3rem;
-                  font-weight: 800;
-                  color: $text-heading;
-                }
-
-                .verified-badge {
-                  width: 1.8rem;
-                  height: 1.8rem;
-                  border-radius: 50%;
-                  background: #e8f5e9;
-                  color: #2e7d32;
-                  font-weight: 900;
-                  font-size: 1.1rem;
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                  flex-shrink: 0;
-                }
-              }
-
-              .review-stars-row {
-                color: #ffb400;
-                font-size: 1.6rem;
-                letter-spacing: 0.2rem;
-                text-shadow: 0 0.1rem 0.4rem rgba(255, 180, 0, 0.4);
-                line-height: 1;
-              }
-            }
-
-            .review-comment-text {
-              margin: 0;
-              font-family: $font-body;
-              font-size: 1.25rem;
-              color: $text-heading;
-              line-height: 1.5;
-              word-break: break-word;
-            }
-
-            .review-card-footer {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              margin-top: 0.2rem;
-
-              .review-date-text {
-                font-size: 1.1rem;
-                color: $text-secondary;
-                font-weight: 600;
-              }
-
-              .like-review-btn {
-                background: #fff0f3;
-                border: 0.1rem solid rgba($primary, 0.2);
-                border-radius: $radius-pill;
-                padding: 0.3rem 0.9rem;
-                font-family: $font-body;
-                font-size: 1.1rem;
-                font-weight: 800;
-                color: $primary;
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4rem;
-                transition: $transition;
-
-                &:hover {
-                  background: $primary;
-                  color: #ffffff;
-                }
-
-                &.liked {
-                  background: $primary;
-                  color: #ffffff;
-                  border-color: $primary;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      .review-input-box {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-top: 0.4rem;
-
-        .rate-your-review-row {
-          display: flex;
-          align-items: center;
           gap: 1rem;
-          background: #fff0f3;
-          border: 0.12rem solid rgba($primary, 0.25);
-          border-radius: 1.2rem;
-          padding: 0.8rem 1.4rem;
-
-          span {
-            font-family: $font-body;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: $text-heading;
-          }
-
-          .ant-rate {
-            font-size: 2.2rem;
-            color: #ffb400;
-            cursor: pointer;
-
-            .ant-rate-star {
-              cursor: pointer;
-              margin-inline-end: 0.6rem;
-            }
-
-            .ant-rate-star-full {
-              color: #ffb400;
-              filter: drop-shadow(0 0.1rem 0.3rem rgba(255, 180, 0, 0.45));
-            }
-          }
         }
-
-        .ant-input {
-          border-radius: 1.4rem !important;
-          border: 0.12rem solid $border !important;
-          background: #fafafa !important;
-          padding: 1rem 1.2rem !important;
-          font-family: $font-body !important;
-          font-size: 1.3rem !important;
-          color: $text-heading !important;
-          transition: $transition;
-
-          &:focus {
-            background: #ffffff !important;
-            border-color: $primary !important;
-            box-shadow: 0 0 0 0.3rem rgba($primary, 0.15) !important;
-          }
-        }
-
-        .post-review-btn {
-          width: 100%;
-          min-height: 4.4rem;
-          background: linear-gradient(135deg, $primary, $accent);
-          color: #ffffff;
-          border: none;
-          border-radius: $radius-pill;
-          font-family: $font-body;
-          font-size: 1.35rem;
-          font-weight: 800;
-          letter-spacing: 0.04em;
-          cursor: pointer;
-          box-shadow: 0 0.6rem 2rem rgba($primary, 0.28);
-          transition: $transition;
-
-          &:hover {
-            transform: translateY(-0.2rem);
-            box-shadow: 0 0.8rem 2.4rem rgba($primary, 0.42);
-          }
-
-          &:active {
-            transform: translateY(0);
-          }
-        }
-      }
-    }
-  }
-}
-
-@include tablet-down {
-  .cake-details-modal {
-    width: 92vw !important;
-    margin: 0 auto;
-
-    .ant-modal-content {
-      padding: 1.8rem;
-      border-radius: 2rem;
-    }
-
-    .cake-modal-content {
-      grid-template-columns: 1fr;
-      gap: 1.4rem;
-
-      > img {
-        width: 100%;
-        height: 20rem;
-      }
-    }
-  }
-}
-
-@include mobile {
-  .cake-details-modal {
-    width: 95vw !important;
-    max-width: 44rem;
-    margin: 0 auto;
-
-    .ant-modal-content {
-      padding: 1.4rem;
-      border-radius: 1.8rem;
-    }
-
-    .cake-modal-content {
-      grid-template-columns: 1fr;
-
-      > img {
-        width: 100%;
-        height: 18rem;
-      }
-
-      .cake-modal-info .cake-specs {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
-        div { padding: 0.6rem 0.4rem; }
-        dt { font-size: 0.95rem; }
-        dd { font-size: 1.1rem; }
       }
     }
   }

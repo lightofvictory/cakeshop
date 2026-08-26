@@ -16,18 +16,21 @@ export const CartProvider = ({ children }) => {
     const todayUtc = new Date().toISOString().split('T')[0];
     return saved ? JSON.parse(saved) : {
       mode: 'delivery', // 'delivery' | 'dinein' | 'pickup'
+      tableNumber: 'Table #1',
+      guestCount: 2,
+      pickupBranch: 'Flagship Bakery - Downtown',
       utcDateStr: todayUtc,
-      utcStartTime: '10:00 UTC',
-      utcEndTime: '12:00 UTC',
       formattedDate: 'Today',
-      formattedTime: '10:00 - 12:00 UTC',
+      formattedTime: 'ASAP (25 MINS)',
+      dateType: 'Today',
+      timeSlot: 'ASAP (25 MINS)',
       isConfigured: false
     };
   });
 
   const [isPreferenceModalOpen, setIsPreferenceModalOpen] = useState(() => {
     const saved = localStorage.getItem('mr-pastry-order-pref');
-    return !saved; // Open on first visit if not set!
+    return !saved;
   });
 
   const [savedAddresses, setSavedAddresses] = useState(() => {
@@ -77,7 +80,6 @@ export const CartProvider = ({ children }) => {
   const closePreferenceModal = () => setIsPreferenceModalOpen(false);
 
   const addToCart = (cake) => {
-    // If order preference hasn't been set yet, open modal
     if (!orderPreference.isConfigured) {
       setIsPreferenceModalOpen(true);
     }
@@ -95,6 +97,9 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => setCartItems([]);
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const subtotal = cartItems.reduce((total, item) => total + item.priceValue * item.quantity, 0);
+  
+  // Dynamic Delivery Fee based on order mode
+  const deliveryFee = orderPreference.mode === 'delivery' ? (subtotal > 0 ? 50 : 0) : 0;
 
   const value = useMemo(() => ({
     cartItems,
@@ -104,6 +109,7 @@ export const CartProvider = ({ children }) => {
     clearCart,
     itemCount,
     subtotal,
+    deliveryFee,
     orderPreference,
     updateOrderPreference,
     isPreferenceModalOpen,
@@ -112,7 +118,7 @@ export const CartProvider = ({ children }) => {
     savedAddresses,
     addAddress,
     removeAddress
-  }), [cartItems, itemCount, subtotal, orderPreference, isPreferenceModalOpen, savedAddresses]);
+  }), [cartItems, itemCount, subtotal, deliveryFee, orderPreference, isPreferenceModalOpen, savedAddresses]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

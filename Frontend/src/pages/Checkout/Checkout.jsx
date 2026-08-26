@@ -3,12 +3,27 @@ import { Link, Navigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOrders } from '../../context/OrdersContext';
-import { TruckOutlined, CoffeeOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, LinkOutlined, PlusOutlined, CheckCircleOutlined, TagOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { 
+  TruckOutlined, 
+  CoffeeOutlined, 
+  ShopOutlined, 
+  EnvironmentOutlined, 
+  PhoneOutlined, 
+  LinkOutlined, 
+  PlusOutlined, 
+  CheckCircleOutlined, 
+  TagOutlined, 
+  CloseCircleOutlined,
+  QrcodeOutlined,
+  UserOutlined,
+  EditOutlined,
+  WarningOutlined
+} from '@ant-design/icons';
 import '../Cart/Cart.scss';
 import './Checkout.scss';
 
 const Checkout = () => {
-  const { cartItems, clearCart, subtotal, orderPreference, openPreferenceModal, savedAddresses } = useCart();
+  const { cartItems, clearCart, subtotal, deliveryFee, orderPreference, openPreferenceModal, savedAddresses } = useCart();
   const { user } = useAuth();
   const { placeOrder } = useOrders();
   const [isComplete, setIsComplete] = useState(false);
@@ -20,7 +35,6 @@ const Checkout = () => {
   const [couponError, setCouponError] = useState('');
 
   const mode = orderPreference?.mode || 'delivery';
-  const deliveryFee = mode === 'delivery' ? (subtotal ? 99 : 0) : 0;
   const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const grandTotal = Math.max(0, subtotal + deliveryFee - couponDiscount);
 
@@ -33,13 +47,16 @@ const Checkout = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: savedAddresses?.[0]?.phone || '',
-    tableNumber: '',
+    tableNumber: orderPreference?.tableNumber || 'Table #1',
+    guestCount: orderPreference?.guestCount || 2,
+    pickupBranch: orderPreference?.pickupBranch || 'Flagship Bakery - Downtown',
     addressLine: savedAddresses?.[0]?.addressLine || '',
     state: savedAddresses?.[0]?.state || '',
     country: savedAddresses?.[0]?.country || 'United States',
     pincode: savedAddresses?.[0]?.pincode || '',
     locationLink: savedAddresses?.[0]?.locationLink || '',
-    cakeMessage: ''
+    cakeMessage: '',
+    specialInstructions: ''
   });
 
   if (!user) return <Navigate to="/signin" replace />;
@@ -51,7 +68,7 @@ const Checkout = () => {
         <p className="eyebrow">Order Confirmed</p>
         <h1>Thank you for your order!</h1>
         <p>We have received your order and our master bakers are preparing your fresh treats.</p>
-        <Link to="/orders" className="shop-button">View My Orders</Link>
+        <Link to="/orders" className="shop-button">View My Orders & Live Status</Link>
       </div>
     </main>
   );
@@ -120,407 +137,281 @@ const Checkout = () => {
         type: 'Delivery',
         address: activeAddr ? `${activeAddr.addressLine}, ${activeAddr.state}, ${activeAddr.country} - ${activeAddr.pincode}` : `${formData.addressLine}, ${formData.state}, ${formData.country} - ${formData.pincode}`,
         phone: formData.phone,
-        locationLink: activeAddr?.locationLink || formData.locationLink
+        locationLink: activeAddr?.locationLink || formData.locationLink,
+        specialInstructions: formData.specialInstructions
       };
     } else if (mode === 'dinein') {
       fulfillmentDetails = {
         type: 'Dine In',
         tableNumber: formData.tableNumber,
-        phone: formData.phone
+        guestCount: formData.guestCount,
+        phone: formData.phone,
+        specialInstructions: formData.specialInstructions
       };
     } else {
       fulfillmentDetails = {
         type: 'Pick Up',
         phone: formData.phone,
-        pickupStore: 'Mr. Pastry Flagship Bakery, 100 Cake Avenue'
+        pickupStore: formData.pickupBranch,
+        specialInstructions: formData.specialInstructions
       };
     }
 
-    const tax = Math.round(subtotal * 0.05);
-    const tip = 30;
+    const initialStatus = mode === 'delivery' ? 'Confirmed' : mode === 'dinein' ? 'Confirmed' : 'Confirmed';
 
     placeOrder({
       customerEmail: user.email,
       items: cartItems,
       subtotal,
-      tax,
+      deliveryFee,
       discount: couponDiscount,
-      tip,
       total: grandTotal,
       orderPreference,
       fulfillmentDetails,
       paymentMethod,
       couponCode: appliedCoupon?.code || '',
-      cakeMessage: formData.cakeMessage
+      cakeMessage: formData.cakeMessage,
+      status: initialStatus
     });
 
     clearCart();
     setIsComplete(true);
   };
 
+  const hasCustomCakes = cartItems.some(i => i.category === 'Customized Cakes' || i.type === 'custom_cake');
+
   return (
-    <main className="checkout-page">
-      <div className="checkout-container">
-        
-        {/* Top Header & Schedule Banner */}
-        <header className="checkout-header">
-          <div className="header-text">
-            <p className="eyebrow">Final Step</p>
-            <h1>Complete Your Order</h1>
+    <main className="shop-page">
+      <header className="shop-heading">
+        <p className="eyebrow">Checkout</p>
+        <h1>Complete Your Order</h1>
+      </header>
+
+      {/* Custom Cake Preparation Rule Warning */}
+      {hasCustomCakes && (
+        <div className="cake-warning-banner">
+          <WarningOutlined style={{ fontSize: '2rem', color: '#d97706' }} />
+          <div>
+            <strong>⚠️ Custom Cake Notice:</strong>
+            <span>Custom theme cakes require advance baking (24–48 hours notice). Our head chef will contact you to verify design details.</span>
           </div>
-
-          <div className="schedule-status-card">
-            <div className="status-info">
-              <span className="mode-badge">
-                {mode === 'delivery' && <><TruckOutlined /> Doorstep Delivery</>}
-                {mode === 'dinein' && <><CoffeeOutlined /> Bakery Dine In</>}
-                {mode === 'pickup' && <><ShopOutlined /> Store Pick Up</>}
-              </span>
-              <span className="schedule-time">
-                📅 {orderPreference?.formattedDate || 'Today'} • {orderPreference?.formattedTime || '10:00 AM - 12:00 PM'}
-              </span>
-            </div>
-            <button type="button" className="change-pref-btn" onClick={openPreferenceModal}>
-              Change Schedule
-            </button>
-          </div>
-        </header>
-
-        {/* 2-Column Main Layout */}
-        <div className="checkout-main-grid">
-          
-          {/* Left Main Form */}
-          <form className="checkout-form-column" onSubmit={handleSubmit}>
-            
-            {/* STEP 1: Customer Contact Details */}
-            <section className="checkout-step-card">
-              <div className="step-header">
-                <span className="step-number">1</span>
-                <div>
-                  <h2>Contact Information</h2>
-                  <p>Your details for order notifications and updates</p>
-                </div>
-              </div>
-
-              <div className="form-row-2">
-                <div className="form-field">
-                  <label>Full Name</label>
-                  <input 
-                    required 
-                    type="text"
-                    value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Enter your full name"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Phone Number</label>
-                  <input 
-                    required 
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+1 (555) 000-0000"
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* STEP 2: Fulfillment Specific Details */}
-            <section className="checkout-step-card">
-              <div className="step-header">
-                <span className="step-number">2</span>
-                <div>
-                  {mode === 'delivery' && <h2>Delivery Address</h2>}
-                  {mode === 'dinein' && <h2>Dine In Table Details</h2>}
-                  {mode === 'pickup' && <h2>Store Pickup Instructions</h2>}
-                  <p>Specify fulfillment details for your order</p>
-                </div>
-              </div>
-
-              {/* Delivery Address Selector */}
-              {mode === 'delivery' && (
-                <div className="address-section">
-                  {savedAddresses && savedAddresses.length > 0 && (
-                    <div className="address-cards-grid">
-                      {savedAddresses.map((addr) => (
-                        <div 
-                          key={addr.id} 
-                          className={`address-card ${selectedAddressId === addr.id ? 'selected' : ''}`}
-                          onClick={() => handleSelectAddress(addr)}
-                        >
-                          <div className="card-header">
-                            <span className="addr-title"><EnvironmentOutlined /> {addr.title || 'Saved Address'}</span>
-                            {selectedAddressId === addr.id && <CheckCircleOutlined className="check-icon" />}
-                          </div>
-                          <p className="addr-line">{addr.addressLine}</p>
-                          <p className="addr-sub">{addr.state}, {addr.country} - {addr.pincode}</p>
-                          <p className="addr-phone"><PhoneOutlined /> {addr.phone}</p>
-                        </div>
-                      ))}
-
-                      <div 
-                        className={`address-card add-card ${selectedAddressId === 'new' ? 'selected' : ''}`}
-                        onClick={() => setSelectedAddressId('new')}
-                      >
-                        <PlusOutlined className="plus-icon" />
-                        <strong>Enter Custom Address</strong>
-                        <p>Deliver to a new address</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {(selectedAddressId === 'new' || !savedAddresses.length) && (
-                    <div className="custom-fields-wrapper">
-                      <div className="form-field full-width">
-                        <label>Street Address Line</label>
-                        <input 
-                          required 
-                          type="text"
-                          value={formData.addressLine} 
-                          onChange={(e) => setFormData({ ...formData, addressLine: e.target.value })}
-                          placeholder="House number, street name, apartment / suite"
-                        />
-                      </div>
-
-                      <div className="form-row-2">
-                        <div className="form-field">
-                          <label>State / Region</label>
-                          <input 
-                            required 
-                            type="text"
-                            value={formData.state} 
-                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                            placeholder="State"
-                          />
-                        </div>
-                        <div className="form-field">
-                          <label>Country</label>
-                          <input 
-                            required 
-                            type="text"
-                            value={formData.country} 
-                            onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="form-row-2">
-                        <div className="form-field">
-                          <label>Pincode / Zip Code</label>
-                          <input 
-                            required 
-                            type="text"
-                            value={formData.pincode} 
-                            onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                            placeholder="90210"
-                          />
-                        </div>
-                        <div className="form-field">
-                          <label>Google Maps Link <small>(Optional)</small></label>
-                          <input 
-                            type="url"
-                            value={formData.locationLink} 
-                            onChange={(e) => setFormData({ ...formData, locationLink: e.target.value })}
-                            placeholder="https://maps.google.com/..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Dine In Table No */}
-              {mode === 'dinein' && (
-                <div className="form-field full-width">
-                  <label>Bakery Table Number</label>
-                  <input 
-                    required 
-                    type="text"
-                    value={formData.tableNumber} 
-                    onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
-                    placeholder="e.g. Table #04"
-                  />
-                </div>
-              )}
-
-              {/* Pick Up Info */}
-              {mode === 'pickup' && (
-                <div className="pickup-box">
-                  <ShopOutlined style={{ fontSize: '3rem', color: '#ff4081' }} />
-                  <div>
-                    <h4>Mr. Pastry Main Bakery Store</h4>
-                    <p>100 Cake Avenue, Gourmet District, City Center</p>
-                    <small>Your order will be packaged fresh for quick counter pickup.</small>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* STEP 3: Cake Custom Message */}
-            <section className="checkout-step-card">
-              <div className="step-header">
-                <span className="step-number">3</span>
-                <div>
-                  <h2>Cake Customization</h2>
-                  <p>Add a personalized message written on your cake</p>
-                </div>
-              </div>
-
-              <div className="form-field full-width">
-                <label>Message on Cake <small>(Optional)</small></label>
-                <input 
-                  type="text"
-                  value={formData.cakeMessage} 
-                  onChange={(e) => setFormData({ ...formData, cakeMessage: e.target.value })}
-                  placeholder="e.g. Happy Birthday Ananya! 🎂"
-                />
-              </div>
-            </section>
-
-            {/* STEP 4: Payment Selection */}
-            <section className="checkout-step-card">
-              <div className="step-header">
-                <span className="step-number">4</span>
-                <div>
-                  <h2>Payment Method</h2>
-                  <p>Choose your preferred payment option</p>
-                </div>
-              </div>
-
-              <div className="payment-options-grid">
-                <div 
-                  className={`payment-card ${paymentMethod === 'cod' ? 'selected' : ''}`}
-                  onClick={() => setPaymentMethod('cod')}
-                >
-                  <div className="radio-circle"></div>
-                  <div>
-                    <strong>Cash on Delivery / Pay at Counter</strong>
-                    <p>Pay when your order arrives or at pickup</p>
-                  </div>
-                </div>
-
-                <div 
-                  className={`payment-card ${paymentMethod === 'upi' ? 'selected' : ''}`}
-                  onClick={() => setPaymentMethod('upi')}
-                >
-                  <div className="radio-circle"></div>
-                  <div>
-                    <strong>UPI / QR Code Payment</strong>
-                    <p>Instant UPI payment via Google Pay, PhonePe, Paytm</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <button type="submit" className="submit-order-btn-desktop">
-              Place Order • ₹{grandTotal.toFixed(2)}
-            </button>
-          </form>
-
-          {/* Right Sticky Order Summary Sidebar */}
-          <aside className="checkout-summary-column">
-            <div className="summary-card">
-              <h3>Order Summary</h3>
-              
-              <div className="items-list">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="summary-item-row">
-                    <img src={item.image} alt={item.name} className="item-thumb" />
-                    <div className="item-details">
-                      <h4>{item.name}</h4>
-                      <p>Qty: {item.quantity} × {item.price}</p>
-                    </div>
-                    <span className="item-total">₹{(item.priceValue * item.quantity).toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Coupon Code Section */}
-              <div className="coupon-box-wrapper">
-                <label><TagOutlined /> Apply Coupon Code</label>
-                {appliedCoupon ? (
-                  <div className="applied-coupon-pill">
-                    <div>
-                      <strong><CheckCircleOutlined /> {appliedCoupon.code}</strong>
-                      <span>Saved ₹{appliedCoupon.discountAmount.toFixed(2)} ({appliedCoupon.description})</span>
-                    </div>
-                    <button type="button" onClick={handleRemoveCoupon} className="remove-coupon-btn">Remove</button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="coupon-input-group">
-                      <input 
-                        type="text" 
-                        placeholder="Enter code (e.g. PASTRY10)" 
-                        value={couponInput}
-                        onChange={(e) => {
-                          setCouponInput(e.target.value);
-                          setCouponError('');
-                        }}
-                      />
-                      <button type="button" onClick={() => handleApplyCoupon()}>Apply</button>
-                    </div>
-                    {couponError && <p className="coupon-error-msg">{couponError}</p>}
-
-                    <div className="coupon-chips">
-                      <span onClick={() => handleApplyCoupon('PASTRY10')}>🏷️ PASTRY10 (10% OFF)</span>
-                      <span onClick={() => handleApplyCoupon('CAKE200')}>🏷️ CAKE200 (₹200 OFF)</span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="cost-breakdown">
-                <div className="cost-row">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
-                </div>
-                
-                {mode === 'delivery' && (
-                  <div className="cost-row">
-                    <span>Delivery Fee</span>
-                    <span>₹{deliveryFee.toFixed(2)}</span>
-                  </div>
-                )}
-
-                {mode !== 'delivery' && (
-                  <div className="cost-row free">
-                    <span>Fulfillment Fee</span>
-                    <span>FREE</span>
-                  </div>
-                )}
-
-                {appliedCoupon && (
-                  <div className="cost-row discount">
-                    <span>Discount ({appliedCoupon.code})</span>
-                    <span>-₹{appliedCoupon.discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-
-                <div className="cost-row grand-total">
-                  <span>Total Payable</span>
-                  <span>₹{grandTotal.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <button 
-                type="button" 
-                className="place-order-btn" 
-                onClick={(e) => {
-                  const form = document.querySelector('.checkout-form-column');
-                  if (form) form.requestSubmit();
-                }}
-              >
-                Confirm & Place Order • ₹{grandTotal.toFixed(2)}
-              </button>
-
-              <Link to="/cart" className="back-cart-link">← Modify Cart Items</Link>
-            </div>
-          </aside>
-
         </div>
+      )}
+
+      <div className="checkout-layout">
+        <form onSubmit={handleSubmit} className="checkout-form">
+
+          {/* Fulfillment Summary & Selector */}
+          <section className="checkout-section-card">
+            <div className="section-header-row">
+              <h2>Order Fulfillment & Schedule</h2>
+              <button type="button" className="change-pref-link" onClick={openPreferenceModal}>
+                <EditOutlined /> Change Mode
+              </button>
+            </div>
+
+            <div className="fulfillment-summary-box">
+              <div className="summary-mode-badge">
+                {mode === 'dinein' ? <CoffeeOutlined /> : mode === 'pickup' ? <ShopOutlined /> : <TruckOutlined />}
+                <span>{mode === 'dinein' ? '🍽️ Dine In at Café' : mode === 'pickup' ? '🛍️ Store Pick Up' : '🚚 Doorstep Delivery'}</span>
+              </div>
+              <p className="summary-schedule-text">
+                Scheduled for <strong>{orderPreference.formattedDate || 'Today'}</strong> at <strong>{orderPreference.formattedTime || 'ASAP'}</strong>
+              </p>
+            </div>
+          </section>
+
+          {/* Dynamic Required Details Section */}
+          <section className="checkout-section-card">
+            <h2>{mode === 'delivery' ? '🚚 Delivery Information' : mode === 'dinein' ? '🍽️ Café Table & Guest Details' : '🛍️ Store Pickup Details'}</h2>
+            
+            {mode === 'delivery' && (
+              <div className="form-fields-stack">
+                <div className="saved-addresses-wrapper">
+                  <label className="field-label">Select Delivery Address:</label>
+                  <div className="address-cards-grid">
+                    {savedAddresses.map((addr) => (
+                      <div 
+                        key={addr.id} 
+                        className={`address-card ${selectedAddressId === addr.id ? 'active' : ''}`}
+                        onClick={() => handleSelectAddress(addr)}
+                      >
+                        <div className="addr-header">
+                          <strong>{addr.title || 'Address'}</strong>
+                          {selectedAddressId === addr.id && <CheckCircleOutlined className="check-icon" />}
+                        </div>
+                        <p>{addr.addressLine}</p>
+                        <p>{addr.state}, {addr.country} - {addr.pincode}</p>
+                        <span className="phone"><PhoneOutlined /> {addr.phone}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Contact Name *</label>
+                    <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Mobile Number *</label>
+                    <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Delivery Address Line *</label>
+                  <input type="text" required value={formData.addressLine} onChange={(e) => setFormData({ ...formData, addressLine: e.target.value })} />
+                </div>
+              </div>
+            )}
+
+            {mode === 'dinein' && (
+              <div className="form-fields-stack">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label><QrcodeOutlined /> Table Number *</label>
+                    <select value={formData.tableNumber} onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}>
+                      {Array.from({ length: 15 }, (_, i) => `Table #${i + 1}`).map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                      <option value="Scan QR Code">Scan QR Code on Table 📱</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label><UserOutlined /> Number of Guests *</label>
+                    <select value={formData.guestCount} onChange={(e) => setFormData({ ...formData, guestCount: Number(e.target.value) })}>
+                      {[1, 2, 3, 4, 5, 6, 8, 10].map(g => (
+                        <option key={g} value={g}>{g} {g === 1 ? 'Guest' : 'Guests'}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Contact Phone Number *</label>
+                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                </div>
+              </div>
+            )}
+
+            {mode === 'pickup' && (
+              <div className="form-fields-stack">
+                <div className="form-group">
+                  <label><EnvironmentOutlined /> Store Pickup Location *</label>
+                  <select value={formData.pickupBranch} onChange={(e) => setFormData({ ...formData, pickupBranch: e.target.value })}>
+                    <option value="Flagship Bakery - Downtown">Flagship Bakery - 100 Cake Avenue, Downtown</option>
+                    <option value="Westside Mall Branch">Westside Mall - Food Court, Level 2</option>
+                    <option value="Eastside Café & Bakehouse">Eastside Bakehouse - 45 Sweet Street</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Contact Phone Number *</label>
+                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Optional Cake Message & Special Requests */}
+          <section className="checkout-section-card">
+            <h2>🎂 Custom Message & Special Requests</h2>
+            <div className="form-group">
+              <label>Message to Write on Cake (Optional)</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Happy Birthday Rahul! 🎉" 
+                value={formData.cakeMessage} 
+                onChange={(e) => setFormData({ ...formData, cakeMessage: e.target.value })} 
+                maxLength={40}
+              />
+            </div>
+            <div className="form-group">
+              <label>Special Instructions / Allergies</label>
+              <textarea 
+                rows={2} 
+                placeholder="e.g. Extra napkins, less sweet cream, ring doorbell on arrival..." 
+                value={formData.specialInstructions} 
+                onChange={(e) => setFormData({ ...formData, specialInstructions: e.target.value })} 
+              />
+            </div>
+          </section>
+
+          {/* Payment Method */}
+          <section className="checkout-section-card">
+            <h2>Payment Method</h2>
+            <div className="payment-options-grid">
+              <label className={`payment-card ${paymentMethod === 'cod' ? 'active' : ''}`}>
+                <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
+                <div>
+                  <strong>💵 {mode === 'dinein' ? 'Pay at Table / Counter' : 'Cash on Delivery (COD)'}</strong>
+                  <p>Pay when your order is served or delivered.</p>
+                </div>
+              </label>
+
+              <label className={`payment-card ${paymentMethod === 'online' ? 'active' : ''}`}>
+                <input type="radio" name="payment" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} />
+                <div>
+                  <strong>💳 Online Payment / UPI</strong>
+                  <p>Pay instantly via Credit Card, Debit Card, or UPI.</p>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <button type="submit" className="shop-button place-order-btn">
+            Place Order • ₹{grandTotal.toFixed(2)}
+          </button>
+        </form>
+
+        {/* Sidebar Summary Column */}
+        <aside className="order-summary checkout-summary-sidebar">
+          <h2>Order Summary</h2>
+          
+          <div className="checkout-items-mini-list">
+            {cartItems.map((item) => (
+              <div key={item.id} className="mini-item-row">
+                <span>{item.name} (x{item.quantity})</span>
+                <strong>₹{(item.priceValue * item.quantity).toFixed(2)}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="coupon-section-box">
+            <label><TagOutlined /> Apply Discount Coupon</label>
+            {!appliedCoupon ? (
+              <div className="coupon-input-row">
+                <input 
+                  type="text" 
+                  placeholder="Enter Code (e.g. PASTRY10)" 
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                />
+                <button type="button" onClick={() => handleApplyCoupon()}>Apply</button>
+              </div>
+            ) : (
+              <div className="applied-coupon-pill">
+                <div>
+                  <strong>{appliedCoupon.code} Applied!</strong>
+                  <span>{appliedCoupon.description}</span>
+                </div>
+                <button type="button" onClick={handleRemoveCoupon}><CloseCircleOutlined /></button>
+              </div>
+            )}
+            {couponError && <p className="coupon-err">{couponError}</p>}
+          </div>
+
+          <div className="summary-calc-stack">
+            <p><span>Subtotal</span><strong>₹{subtotal.toFixed(2)}</strong></p>
+            <p>
+              <span>Delivery Fee</span>
+              <strong>{mode === 'delivery' ? `₹${deliveryFee.toFixed(2)}` : <span className="free-badge">FREE (₹0)</span>}</strong>
+            </p>
+            {appliedCoupon && <p className="discount-row"><span>Discount ({appliedCoupon.code})</span><strong>-₹{couponDiscount.toFixed(2)}</strong></p>}
+            <div className="total-row"><span>Total Payable</span><strong>₹{grandTotal.toFixed(2)}</strong></div>
+          </div>
+        </aside>
       </div>
     </main>
   );

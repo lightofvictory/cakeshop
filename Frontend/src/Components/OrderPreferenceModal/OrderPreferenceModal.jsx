@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
-import { DatePicker, TimePicker } from 'antd';
-import { TruckOutlined, CoffeeOutlined, ShopOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
+import { DatePicker } from 'antd';
+import { TruckOutlined, CoffeeOutlined, ShopOutlined, CloseOutlined, CheckOutlined, QrcodeOutlined, UserOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import './OrderPreferenceModal.scss';
@@ -12,9 +12,14 @@ const OrderPreferenceModal = () => {
   const { orderPreference, updateOrderPreference, isPreferenceModalOpen, closePreferenceModal } = useCart();
 
   const [mode, setMode] = useState(orderPreference?.mode || 'delivery');
-  const [dateType, setDateType] = useState('Today'); // 'Today' | 'Tomorrow' | 'Custom'
+  const [dateType, setDateType] = useState(orderPreference?.dateType || 'Today');
   const [customDate, setCustomDate] = useState(() => dayjs());
-  const [timeSlot, setTimeSlot] = useState(orderPreference?.timeSlot || '10:00 AM - 12:00 PM');
+  const [timeSlot, setTimeSlot] = useState(orderPreference?.timeSlot || 'ASAP (25 MINS)');
+  
+  // Specific fulfillment options
+  const [tableNumber, setTableNumber] = useState(orderPreference?.tableNumber || 'Table #1');
+  const [guestCount, setGuestCount] = useState(orderPreference?.guestCount || 2);
+  const [pickupBranch, setPickupBranch] = useState(orderPreference?.pickupBranch || 'Flagship Bakery - Downtown');
 
   useEffect(() => {
     if (isPreferenceModalOpen) {
@@ -38,13 +43,11 @@ const OrderPreferenceModal = () => {
   const handleConfirm = () => {
     const targetDayjs = getTargetDayjsDate();
     
-    // Parse time slot to calculate start/end hours
     let startHour = 10;
     if (timeSlot.includes('02:00 PM')) startHour = 14;
     if (timeSlot.includes('06:00 PM')) startHour = 18;
     if (timeSlot.includes('08:00 PM')) startHour = 20;
 
-    // Create UTC ISO timestamp for backend payload
     const utcDateTime = targetDayjs.hour(startHour).minute(0).second(0).utc();
     const utcScheduledISO = utcDateTime.toISOString();
 
@@ -53,6 +56,9 @@ const OrderPreferenceModal = () => {
 
     updateOrderPreference({
       mode,
+      tableNumber,
+      guestCount,
+      pickupBranch,
       utcScheduledISO,
       formattedDate,
       formattedTime,
@@ -64,7 +70,7 @@ const OrderPreferenceModal = () => {
 
   const getModeTitle = () => {
     if (mode === 'delivery') return 'Delivery';
-    if (mode === 'dinein') return 'Bakery Dine In';
+    if (mode === 'dinein') return 'Dine In';
     return 'Store Pick Up';
   };
 
@@ -78,9 +84,9 @@ const OrderPreferenceModal = () => {
         </button>
 
         <div className="modal-header">
-          <span className="pref-badge">Order Schedule</span>
+          <span className="pref-badge">Order Fulfillment</span>
           <h2>How would you like to receive your order?</h2>
-          <p>Select your fulfillment method, date, and preferred time slot.</p>
+          <p>Select your preferred order type, table / branch, and time schedule.</p>
         </div>
 
         {/* 1. Fulfillment Mode Selection */}
@@ -94,7 +100,7 @@ const OrderPreferenceModal = () => {
               <TruckOutlined style={{ fontSize: '2.8rem' }} />
             </div>
             <div className="card-info">
-              <h3>Delivery</h3>
+              <h3>🚚 Delivery</h3>
               <p>Fresh doorstep delivery</p>
             </div>
             {mode === 'delivery' && <span className="check-badge"><CheckOutlined /></span>}
@@ -109,8 +115,8 @@ const OrderPreferenceModal = () => {
               <CoffeeOutlined style={{ fontSize: '2.8rem' }} />
             </div>
             <div className="card-info">
-              <h3>Dine In</h3>
-              <p>Enjoy at our bakery cafe</p>
+              <h3>🍽️ Dine In</h3>
+              <p>Enjoy at our bakery café</p>
             </div>
             {mode === 'dinein' && <span className="check-badge"><CheckOutlined /></span>}
           </button>
@@ -124,12 +130,50 @@ const OrderPreferenceModal = () => {
               <ShopOutlined style={{ fontSize: '2.8rem' }} />
             </div>
             <div className="card-info">
-              <h3>Pick Up</h3>
+              <h3>🛍️ Pick Up</h3>
               <p>Counter takeaway</p>
             </div>
             {mode === 'pickup' && <span className="check-badge"><CheckOutlined /></span>}
           </button>
         </div>
+
+        {/* Dynamic Mode-Specific Controls */}
+        {mode === 'dinein' && (
+          <div className="mode-specific-box">
+            <div className="control-row">
+              <div className="control-item">
+                <label><QrcodeOutlined /> Select Table Number:</label>
+                <select value={tableNumber} onChange={(e) => setTableNumber(e.target.value)}>
+                  {Array.from({ length: 15 }, (_, i) => `Table #${i + 1}`).map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                  <option value="Scan QR Code">Scan QR Code on Table 📱</option>
+                </select>
+              </div>
+              <div className="control-item">
+                <label><UserOutlined /> Guests Count:</label>
+                <select value={guestCount} onChange={(e) => setGuestCount(Number(e.target.value))}>
+                  {[1, 2, 3, 4, 5, 6, 8, 10].map(g => (
+                    <option key={g} value={g}>{g} {g === 1 ? 'Guest' : 'Guests'}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {mode === 'pickup' && (
+          <div className="mode-specific-box">
+            <div className="control-item full-width">
+              <label><EnvironmentOutlined /> Select Pickup Branch:</label>
+              <select value={pickupBranch} onChange={(e) => setPickupBranch(e.target.value)}>
+                <option value="Flagship Bakery - Downtown">Flagship Bakery - 100 Cake Avenue, Downtown</option>
+                <option value="Westside Mall Branch">Westside Mall - Food Court, Level 2</option>
+                <option value="Eastside Café & Bakehouse">Eastside Bakehouse - 45 Sweet Street</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* 2. Date Selection (Today, Tomorrow, Calendar DatePicker) */}
         <div className="section-group">
