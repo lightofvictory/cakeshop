@@ -1,0 +1,340 @@
+/* MyPastry Admin Panel - Pure SCSS Master Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+// SCSS Variables
+$primary-rose: #f43f5e;
+$primary-rose-hover: #e11d48;
+$primary-pink: #ec4899;
+$gradient-rose: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+$bg-slate: #f8fafc;
+$card-bg: #ffffff;
+$border-color: #e2e8f0;
+$border-light: #f1f5f9;
+$text-main: #0f172a;
+$text-muted: #64748b;
+$text-light: #94a3b8;
+
+// Reset & Global Styles
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background-color: $bg-slate;
+  color: $text-main;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+// Scrollbars
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+// Root Layout
+.admin-app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: $bg-slate;
+}
+
+// Top Navbar
+.admin-navbar {
+  background: $card-bg;
+  border-bottom: 1px solid $border-color;
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: $gradient-rose;
+      color: #ffffff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3);
+    }
+
+    .brand-info {
+      .brand-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        h1 {
+          font-size: 17px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          color: $text-main;
+          margin: 0;
+        }
+      }
+      p {
+        font-size: 11px;
+        color: $text-light;
+        font-weight: 500;
+        margin: 2px 0 0;
+      }
+    }
+  }
+
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+// Sidebar & Main Layout Wrapper
+.admin-workspace-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+// Left Sidebar
+.admin-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: $card-bg;
+  border-right: 1px solid $border-color;
+  padding: 24px 16px;
+  min-height: calc(100vh - 67px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .sidebar-nav-group {
+    margin-bottom: 20px;
+
+    .group-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: $text-light;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: $text-muted;
+      text-decoration: none;
+      transition: all 0.18s ease;
+
+      .anticon {
+        font-size: 16px;
+      }
+
+      &:hover {
+        background-color: #fff1f2;
+        color: $primary-rose;
+      }
+
+      &.active {
+        background: $gradient-rose;
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 4px 14px rgba(244, 63, 94, 0.28);
+        transform: translateX(2px);
+      }
+    }
+
+    .sidebar-nested-group {
+      margin-top: 4px;
+
+      .parent-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        color: $text-main;
+        cursor: pointer;
+        transition: all 0.18s ease;
+
+        &:hover {
+          background-color: #fff1f2;
+          color: $primary-rose;
+        }
+      }
+
+      .nested-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-left: 12px;
+        margin-top: 6px;
+
+        .nested-link {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 14px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #475569;
+          background: #f8fafc;
+          border: 1px solid #f1f5f9;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #fff1f2;
+            color: $primary-rose;
+          }
+
+          &.active {
+            background: #f43f5e;
+            color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35);
+          }
+        }
+      }
+    }
+  }
+
+  .sidebar-footer-card {
+    padding: 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid $border-color;
+    text-align: center;
+
+    p.title {
+      font-size: 12px;
+      font-weight: 700;
+      color: $text-main;
+      margin: 0;
+    }
+    p.subtitle {
+      font-size: 10px;
+      color: $text-light;
+      margin: 2px 0 0;
+    }
+  }
+}
+
+// Sub-menu Top Pill Buttons inside Settings Page (Straight Row Layout)
+.settings-top-pills-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  .setting-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 26px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #ffffff;
+    background: #f43f5e;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #e11d48;
+      transform: translateY(-2px);
+    }
+
+    &.active {
+      background: #e11d48;
+      box-shadow: 0 6px 20px rgba(225, 29, 72, 0.5);
+      border: 2px solid #ffffff;
+    }
+  }
+}
+
+// Page Container (Full Width)
+.page-container {
+  padding: 24px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+// Header Banner Card
+.page-header-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  border: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .header-info {
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff1f2;
+      color: $primary-rose;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: $text-main;
+      margin: 0 0 4px;
+    }
+    p {
+      font-size: 13px;
+      color: $text-muted;
+      margin: 0;
+    }
+  }
+}

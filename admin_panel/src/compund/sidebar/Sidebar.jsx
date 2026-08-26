@@ -1,60 +1,68 @@
-import React from 'react'
-import { assert } from '../../assets/assert'
-import { NavLink } from 'react-router-dom'
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import {
+  DashboardOutlined,
+  ShoppingOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
+  TagsOutlined,
+  UsergroupAddOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+
+const menuGroups = [
+  {
+    title: 'MAIN CONTROL',
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: <DashboardOutlined /> },
+      { path: '/orders', label: 'Order Lifecycle', icon: <ShoppingOutlined /> },
+      { path: '/kanban', label: 'Preparation Board', icon: <AppstoreOutlined /> },
+    ],
+  },
+  {
+    title: 'MENU & INVENTORY',
+    items: [
+      { path: '/products', label: 'Products Catalog', icon: <UnorderedListOutlined /> },
+      { path: '/categories', label: 'Categories', icon: <TagsOutlined /> },
+    ],
+  },
+  {
+    title: 'BUSINESS & INSIGHTS',
+    items: [
+      { path: '/customers', label: 'Customers', icon: <UsergroupAddOutlined /> },
+      { path: '/settings', label: 'Shop Settings', icon: <SettingOutlined /> },
+    ],
+  },
+];
 
 const Sidebar = () => {
-
-const activeStyle = {
-  backgroundColor: '#fff0ed',
-  borderColor: 'tomato',
-  color: 'tomato',
-};
-
-const inactiveStyle = {
-
-  color: 'inherit',
-};
-
-const active = ({ isActive }) => (isActive ? activeStyle : inactiveStyle);
-
-
-
   return (
-    <>
-      <div className="w-1/4 h-screen ms-24 bg-gray-200 flex flex-col items-center gap-10 pt-2 md:w-1/4">
-        <NavLink
-          to='/add'
-          className="w-full h-20 bg-gray-300 flex justify-center gap-5 items-center border-1 sm:h-16 " style={active}
-        >
-          <img
-            className="w-10 h-10 sm:w-8 sm:h-8"
-            src={assert.add_image}
-            alt=""
-          />
-          <p className="text-sm sm:text-xs hidden sm:block">Add Items</p>
-        </NavLink>
-
-        <NavLink
-          to='/list'
-          className="w-full h-20 bg-gray-300 flex justify-center gap-5 items-center border-1 sm:h-16 " style={active}
-        >
-          <img
-            className="w-10 h-10 sm:w-8 sm:h-8"
-            src={assert.cardbox}
-            alt=""
-          />
-          <p className="text-sm sm:text-xs hidden sm:block">List Items</p>
-        </NavLink>
-
-        <NavLink
-          to='/order'
-          className="w-full h-20 bg-gray-300 flex justify-center gap-5 items-center border-1 sm:h-16 " style={active}
-        >
-          <img className="w-10 h-10 sm:w-8 sm:h-8" src={assert.order} alt="" />
-          <p className="text-sm sm:text-xs hidden sm:block">Order Items</p>
-        </NavLink>
+    <aside className="admin-sidebar">
+      <div>
+        {menuGroups.map((group) => (
+          <div key={group.title} className="sidebar-nav-group">
+            <p className="group-title">{group.title}</p>
+            <div>
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                >
+                  <span style={{ fontSize: '16px', display: 'flex', alignItems: 'center' }}>{item.icon}</span>
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    </>
+
+      <div className="sidebar-footer-card">
+        <p className="title">🟢 Store Active</p>
+        <p className="subtitle">Live syncing with Frontend</p>
+      </div>
+    </aside>
   );
 };
 
