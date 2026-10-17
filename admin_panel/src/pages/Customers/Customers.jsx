@@ -5,14 +5,12 @@ import { Card, Table, Tag, Button, Input, Modal, Drawer, Form, Switch, Row, Col,
 import {
   UsergroupAddOutlined,
   SearchOutlined,
-  PhoneOutlined,
   EnvironmentOutlined,
   CrownOutlined,
   ShoppingOutlined,
-  DollarOutlined,
   EditOutlined,
   DeleteOutlined,
-  PlusOutlined,
+  UserAddOutlined,
 } from '@ant-design/icons';
 
 const Customers = () => {
@@ -57,8 +55,6 @@ const Customers = () => {
 
   useEffect(() => {
     fetchCustomers();
-    const interval = setInterval(fetchCustomers, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   const openDrawer = async (cust) => {
@@ -232,35 +228,37 @@ const Customers = () => {
 
   return (
     <div className="page-container">
-      {/* Banner */}
-      <div className="page-header-card">
+      {/* Clean Header */}
+      <div className="page-header-card" style={{ marginBottom: '20px' }}>
         <div className="header-info">
-          <span className="badge-pill">
-            <UsergroupAddOutlined /> Customer Relationship System
-          </span>
           <h2>Customer Directory & Profiles</h2>
-          <p>Real-time list of customers automatically synced when orders are placed on Frontend.</p>
+          <p style={{ margin: 0, color: '#64748b' }}>Real-time list of customers automatically synced when orders are placed.</p>
         </div>
 
         <Button
           type="primary"
           size="large"
-          icon={<PlusOutlined />}
-          style={{ backgroundColor: '#f43f5e', fontWeight: 800, borderRadius: '12px', boxShadow: '0 4px 14px rgba(244, 63, 94, 0.3)' }}
+          icon={<UserAddOutlined />}
+          style={{
+            backgroundColor: '#f43f5e',
+            fontWeight: 800,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(244, 63, 94, 0.25)',
+          }}
           onClick={() => {
             setEditingCust(null);
             form.resetFields();
             setIsModalOpen(true);
           }}
         >
-          + Add Customer
+          Add Customer
         </Button>
       </div>
 
       {/* Stats Row */}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '20px' } }} style={{ borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+          <Card hoverable styles={{ body: { padding: '16px' } }} style={{ borderRadius: '14px', border: '1px solid #f1f5f9' }}>
             <Statistic
               title={<span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Total Customers</span>}
               value={stats.totalCustomers}
@@ -271,7 +269,7 @@ const Customers = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '20px' } }} style={{ borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+          <Card hoverable styles={{ body: { padding: '16px' } }} style={{ borderRadius: '14px', border: '1px solid #f1f5f9' }}>
             <Statistic
               title={<span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>VIP Buyers</span>}
               value={stats.vipCount}
@@ -282,24 +280,22 @@ const Customers = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '20px' } }} style={{ borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+          <Card hoverable styles={{ body: { padding: '16px' } }} style={{ borderRadius: '14px', border: '1px solid #f1f5f9' }}>
             <Statistic
               title={<span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Total Customer Spend</span>}
               value={stats.totalSpentAll}
-              prefix={<DollarOutlined style={{ color: '#10b981', marginRight: '8px' }} />}
-              suffix="₹"
+              prefix={<span style={{ color: '#10b981', fontWeight: 900, marginRight: '6px' }}>₹</span>}
               styles={{ content: { fontWeight: 900, color: '#0f172a' } }}
             />
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable styles={{ body: { padding: '20px' } }} style={{ borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+          <Card hoverable styles={{ body: { padding: '16px' } }} style={{ borderRadius: '14px', border: '1px solid #f1f5f9' }}>
             <Statistic
               title={<span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Avg Spend / Customer</span>}
               value={stats.avgSpentPerCust}
-              prefix={<ShoppingOutlined style={{ color: '#9333ea', marginRight: '8px' }} />}
-              suffix="₹"
+              prefix={<span style={{ color: '#9333ea', fontWeight: 900, marginRight: '6px' }}>₹</span>}
               styles={{ content: { fontWeight: 900, color: '#0f172a' } }}
             />
           </Card>
@@ -307,14 +303,14 @@ const Customers = () => {
       </Row>
 
       {/* Directory Table */}
-      <Card style={{ borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+      <Card style={{ borderRadius: '14px', border: '1px solid #f1f5f9' }}>
         <Space direction="vertical" style={{ width: '100%', gap: '16px' }}>
           <Input
             prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
             placeholder="Search by customer name, phone number, or city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: '360px', borderRadius: '10px' }}
+            style={{ maxWidth: '340px', borderRadius: '8px' }}
           />
 
           <Table
@@ -389,18 +385,18 @@ const Customers = () => {
       >
         <Form form={form} layout="vertical" onFinish={handleCreateOrUpdate} style={{ marginTop: '16px' }}>
           <Form.Item name="name" label={<span style={{ fontWeight: 800 }}>Customer Name *</span>} rules={[{ required: true }]}>
-            <Input placeholder="e.g. Rahul Sharma" style={{ borderRadius: '10px' }} />
+            <Input placeholder="e.g. Rahul Sharma" style={{ borderRadius: '8px' }} />
           </Form.Item>
 
           <Row gutter={12}>
             <Col xs={12}>
               <Form.Item name="phone" label={<span style={{ fontWeight: 800 }}>Phone Number *</span>} rules={[{ required: true }]}>
-                <Input placeholder="e.g. +919876543210" style={{ borderRadius: '10px' }} />
+                <Input placeholder="e.g. +919876543210" style={{ borderRadius: '8px' }} />
               </Form.Item>
             </Col>
             <Col xs={12}>
               <Form.Item name="email" label={<span style={{ fontWeight: 800 }}>Email Address</span>}>
-                <Input placeholder="e.g. rahul@gmail.com" style={{ borderRadius: '10px' }} />
+                <Input placeholder="e.g. rahul@gmail.com" style={{ borderRadius: '8px' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -408,12 +404,12 @@ const Customers = () => {
           <Row gutter={12}>
             <Col xs={16}>
               <Form.Item name="address" label={<span style={{ fontWeight: 800 }}>Address</span>}>
-                <Input placeholder="e.g. Flat 402, Sunshine Apartments" style={{ borderRadius: '10px' }} />
+                <Input placeholder="e.g. Flat 402, Sunshine Apartments" style={{ borderRadius: '8px' }} />
               </Form.Item>
             </Col>
             <Col xs={8}>
               <Form.Item name="city" label={<span style={{ fontWeight: 800 }}>City</span>}>
-                <Input placeholder="e.g. Mumbai" style={{ borderRadius: '10px' }} />
+                <Input placeholder="e.g. Mumbai" style={{ borderRadius: '8px' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -423,7 +419,7 @@ const Customers = () => {
           </Form.Item>
 
           <Form.Item name="notes" label={<span style={{ fontWeight: 800 }}>Notes / Preferences</span>}>
-            <Input.TextArea rows={2} placeholder="e.g. Prefers eggless cakes / allergic to nuts" style={{ borderRadius: '10px' }} />
+            <Input.TextArea rows={2} placeholder="e.g. Prefers eggless cakes / allergic to nuts" style={{ borderRadius: '8px' }} />
           </Form.Item>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>

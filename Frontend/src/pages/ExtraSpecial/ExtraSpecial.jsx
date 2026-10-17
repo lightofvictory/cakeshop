@@ -65,10 +65,8 @@ const ExtraSpecial = () => {
                   <p className="card-item-desc">{item.desc}</p>
 
                   <div className="card-price-offer-row">
-                    <span className="card-discount-badge">{item.discount}</span>
                     <div className="card-price-group">
                       <strong className="card-current-price">{item.price}</strong>
-                      <span className="card-original-price">{item.originalPrice}</span>
                     </div>
                   </div>
 

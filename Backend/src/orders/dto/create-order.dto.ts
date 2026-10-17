@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderStatus, OrderType } from '../schemas/order.schema';
+import {
+  OrderStatus,
+  OrderType,
+  OrderSource,
+  FulfillmentType,
+  OverallOrderStatus,
+  PaymentStatusEnum,
+  KitchenStatus,
+  FulfillmentStatus,
+} from '../schemas/order.schema';
 
 export class OrderItemDto {
   @ApiProperty({ example: 'Birthday Truffle Cake' })
@@ -76,9 +85,20 @@ export class CreateOrderDto {
   @Type(() => OrderItemDto)
   items: OrderItemDto[];
 
-  @ApiProperty({ enum: OrderType, example: OrderType.DELIVERY })
+  @ApiProperty({ enum: OrderSource, example: OrderSource.ECOMMERCE, required: false })
+  @IsOptional()
+  @IsEnum(OrderSource)
+  orderSource?: OrderSource;
+
+  @ApiProperty({ enum: FulfillmentType, example: FulfillmentType.DELIVERY, required: false })
+  @IsOptional()
+  @IsEnum(FulfillmentType)
+  fulfillmentType?: FulfillmentType;
+
+  @ApiProperty({ enum: OrderType, example: OrderType.DELIVERY, required: false })
+  @IsOptional()
   @IsEnum(OrderType)
-  orderType: OrderType;
+  orderType?: OrderType;
 
   @ApiProperty({ example: 'COD', required: false })
   @IsOptional()
@@ -93,15 +113,112 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiProperty({ example: 'Table #12', required: false })
+  @IsOptional()
+  @IsString()
+  tableNumber?: string;
+
+  @ApiProperty({ example: 'ts_981247', required: false })
+  @IsOptional()
+  @IsString()
+  tableSessionId?: string;
+
+  @ApiProperty({ example: 4, required: false })
+  @IsOptional()
+  @IsNumber()
+  guestCount?: number;
+
+  @ApiProperty({ example: 'Flagship Bakery - Downtown', required: false })
+  @IsOptional()
+  @IsString()
+  pickupBranch?: string;
+
+  @ApiProperty({ example: 'Today', required: false })
+  @IsOptional()
+  @IsString()
+  pickupDate?: string;
+
+  @ApiProperty({ example: '10:00 AM - 12:00 PM', required: false })
+  @IsOptional()
+  @IsString()
+  pickupTime?: string;
+
+  @ApiProperty({ example: 'WHATSAPP_SMS', required: false })
+  @IsOptional()
+  @IsString()
+  orderUpdateChannel?: string;
+
+  @ApiProperty({ example: 'WHATSAPP', required: false })
+  @IsOptional()
+  @IsString()
+  receiptChannel?: string;
 }
 
 export class UpdateOrderStatusDto {
-  @ApiProperty({ enum: OrderStatus, example: OrderStatus.ACCEPTED })
-  @IsEnum(OrderStatus)
-  status: OrderStatus;
+  @ApiProperty({ enum: OverallOrderStatus, example: OverallOrderStatus.CONFIRMED, required: false })
+  @IsOptional()
+  @IsString()
+  orderStatus?: OverallOrderStatus;
+
+  @ApiProperty({ enum: OrderStatus, example: OrderStatus.ACCEPTED, required: false })
+  @IsOptional()
+  status?: string;
 
   @ApiProperty({ example: 'Out of stock ingredient', required: false })
   @IsOptional()
   @IsString()
   rejectionReason?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  deliveryPartner?: { name?: string; phone?: string; trackingUrl?: string };
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  note?: string;
 }
+
+export class UpdateKitchenStatusDto {
+  @ApiProperty({ enum: KitchenStatus, example: KitchenStatus.PREPARING })
+  @IsEnum(KitchenStatus)
+  kitchenStatus: KitchenStatus;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  note?: string;
+}
+
+export class UpdateFulfillmentStatusDto {
+  @ApiProperty({ enum: FulfillmentStatus, example: FulfillmentStatus.OUT_FOR_DELIVERY })
+  @IsEnum(FulfillmentStatus)
+  fulfillmentStatus: FulfillmentStatus;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  deliveryPartner?: { name?: string; phone?: string; trackingUrl?: string };
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  note?: string;
+}
+
+export class UpdatePaymentStatusDto {
+  @ApiProperty({ enum: PaymentStatusEnum, example: PaymentStatusEnum.PAID })
+  @IsEnum(PaymentStatusEnum)
+  paymentStatus: PaymentStatusEnum;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  transactionId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  note?: string;
+}
+

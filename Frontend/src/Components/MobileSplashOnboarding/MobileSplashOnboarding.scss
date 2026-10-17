@@ -1,0 +1,160 @@
+.mobile-splash-container {
+  display: none; // Hidden on desktop & tablet
+
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    z-index: 999999;
+    background-color: #1a0f13;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+
+    // Fullscreen Image Track Carousel
+    .splash-bg-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+      .splash-bg-slide {
+        width: 100vw;
+        height: 100dvh;
+        flex-shrink: 0;
+        position: relative;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center top;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.4) 100%);
+          pointer-events: none;
+        }
+      }
+    }
+
+    // Bottom Sheet Card Overlay with Curved Top and Teardrop Badge
+    .splash-bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, #FFC5D3 0%, #FFA8BD 100%);
+      border-top-left-radius: 46px;
+      border-top-right-radius: 46px;
+      padding: 34px 24px 38px;
+      text-align: center;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.25);
+      z-index: 5;
+
+      // Floating Pink Teardrop / Waterdrop Badge Icon
+      .teardrop-badge-wrapper {
+        position: absolute;
+        top: -34px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 58px;
+        height: 64px;
+        filter: drop-shadow(0 6px 14px rgba(217, 27, 92, 0.45));
+
+        .teardrop-svg {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      .sheet-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        &.animate-slide-fade {
+          animation: slideContentIn 0.35s ease-out forwards;
+        }
+
+        .sheet-title {
+          font-family: 'Georgia', 'Playfair Display', serif;
+          font-size: 27px;
+          font-weight: 800;
+          color: #2B1B1F;
+          margin: 10px 0 6px;
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+        }
+
+        .sheet-subtitle {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #8C4757;
+          margin: 0 0 18px;
+        }
+
+        .dots-indicator-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          margin-bottom: 22px;
+
+          .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(140, 71, 87, 0.35);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            &.active {
+              width: 24px;
+              border-radius: 12px;
+              background: #D91B5C;
+              box-shadow: 0 2px 8px rgba(217, 27, 92, 0.4);
+            }
+          }
+        }
+
+        .get-started-btn {
+          width: 100%;
+          max-width: 220px;
+          height: 52px;
+          border-radius: 28px;
+          background: #F50B5A;
+          color: #ffffff;
+          font-size: 16px;
+          font-weight: 800;
+          border: none;
+          outline: none;
+          box-shadow: 0 8px 22px rgba(245, 11, 90, 0.4);
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+          &:active {
+            transform: scale(0.96);
+            box-shadow: 0 4px 12px rgba(245, 11, 90, 0.3);
+          }
+        }
+      }
+    }
+
+    @keyframes slideContentIn {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+}

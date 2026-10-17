@@ -87,88 +87,289 @@ const initialCakes = [
   }
 ];
 
-const defaultCategories = ['All', 'Cake Item', 'Snakes Item', 'Deserts Item', 'Salad Item', 'Pure Veg', 'Pasta Item', 'Cookies Item', 'Sweet Items'];
+import MobileAppView from '../../Components/MobileAppView/MobileAppView';
 
 const Home = () => {
   const { settings } = useSettings();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [items, setItems] = useState(initialCakes);
-  const [categoriesList, setCategoriesList] = useState(defaultCategories);
+  const [items, setItems] = useState([]);
+  const [categoriesList, setCategoriesList] = useState(['All']);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedWeights, setSelectedWeights] = useState({});
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [customModalItem, setCustomModalItem] = useState(null);
   const [customWeightVal, setCustomWeightVal] = useState('6');
 
   useEffect(() => {
-    const fetchBackendItems = async () => {
+    const fetchBackendData = async () => {
+      setLoading(true);
       try {
-        const res = await axios.get('http://localhost:3000/api/items');
-        if (res.data && res.data.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
-          const formatted = res.data.data.map((item) => ({
-            id: item._id,
+        const [itemsRes, catRes] = await Promise.all([
+          axios.get('http://localhost:3000/api/items'),
+          axios.get('http://localhost:3000/api/categories')
+        ]);
+
+        const dbItems = (itemsRes.data && itemsRes.data.success && Array.isArray(itemsRes.data.data)) ? itemsRes.data.data : [];
+        const dbCats = (catRes.data && catRes.data.success && Array.isArray(catRes.data.data)) ? catRes.data.data : [];
+
+        setDbCategories(dbCats);
+
+        const formattedItems = dbItems.map((item) => {
+          let imageUrl = 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80';
+          if (item.image) {
+            if (item.image.startsWith('http') || item.image.startsWith('blob:') || item.image.startsWith('data:')) {
+              imageUrl = item.image;
+            } else {
+              imageUrl = `http://localhost:3000/images/${item.image}`;
+            }
+          }
+
+          let discountTag = item.discount || '';
+          if (!discountTag) {
+            if (item.offerType === 'FLAT' && item.flatAmount) {
+              discountTag = `FLAT ₹${item.flatAmount} OFF`;
+            } else if (item.offerPercentage) {
+              discountTag = `${item.offerPercentage}% OFF`;
+            }
+          }
+
+          const hasOffer = item.offerPrice && item.offerPrice < item.price;
+          const displayPrice = hasOffer ? item.offerPrice : item.price;
+          const displayOriginalPrice = item.originalPrice ? `₹${item.originalPrice}` : (hasOffer ? `₹${item.price}` : '');
+
+          return {
+            id: item._id || item.id,
+            _id: item._id || item.id,
             name: item.name,
-            image: item.image.startsWith('http') ? item.image : `http://localhost:3000/images/${item.image}`,
-            deliveryTime: '25 MINS',
-            weight: '1 Kg',
-            rating: '4.9',
-            discount: '15% OFF',
-            originalPrice: `₹${Number(item.price) + 150}`,
-            price: `₹${item.price}`,
-            category: item.category,
-            desc: item.description,
-          }));
+            image: imageUrl,
+            deliveryTime: item.deliveryTime || '25 MINS',
+            weight: item.weight || '1 Kg',
+            rating: item.rating ? String(item.rating) : '4.8',
+            discount: discountTag,
+            badge: discountTag,
+            originalPrice: displayOriginalPrice,
+            price: `₹${displayPrice}`,
+            priceValue: Number(displayPrice) || 0,
+            category: item.category || 'Cake Item',
+            desc: item.description || '',
+          };
+        });
 
-          setItems(formatted);
+        setItems(formattedItems);
 
-          const dynamicCats = Array.from(new Set(res.data.data.map((i) => i.category)));
-          const combined = Array.from(new Set(['All', ...defaultCategories, ...dynamicCats]));
-          setCategoriesList(combined);
-        }
+        const dbCatNames = dbCats.map((c) => c.name);
+        const itemCatNames = dbItems.map((i) => i.category).filter(Boolean);
+        const popularCatNames = ['Cakes', 'Desserts', 'Burgers', 'Pizza', 'Snacks', 'Fast Food'];
+        const allDbCatNames = Array.from(new Set([...popularCatNames, ...dbCatNames, ...itemCatNames]));
+
+        setCategoriesList(['All', ...allDbCatNames]);
       } catch (err) {
-        console.log('Backend server unreachable or no items yet, using initial items:', err.message);
+        console.error('Error fetching database menu items:', err.message);
+        setItems([]);
+        setCategoriesList(['All', 'Cakes', 'Desserts', 'Burgers', 'Pizza', 'Snacks', 'Fast Food']);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchBackendItems();
+    fetchBackendData();
   }, []);
+
+  const getCategoryGraphic = (categoryName) => {
+    if (categoryName === 'All') {
+      return { type: 'img', src: assets.cake3 };
+    }
+    const dbCat = dbCategories.find(
+      (c) => c.name && c.name.trim().toLowerCase() === categoryName.trim().toLowerCase()
+    );
+    if (dbCat && dbCat.image) {
+      const src = dbCat.image.startsWith('http')
+        ? dbCat.image
+        : `http://localhost:3000/images/${dbCat.image}`;
+      return { type: 'img', src };
+    }
+    if (dbCat && dbCat.emoji) {
+      return { type: 'emoji', emoji: dbCat.emoji };
+    }
+    const itemMatch = items.find(
+      (i) => i.category && i.category.trim().toLowerCase() === categoryName.trim().toLowerCase()
+    );
+    if (itemMatch && itemMatch.image) {
+      return { type: 'img', src: itemMatch.image };
+    }
+
+    const catLower = categoryName.toLowerCase();
+    if (catLower.includes('burger')) return { type: 'img', src: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80' };
+    if (catLower.includes('pizza')) return { type: 'img', src: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=80' };
+    if (catLower.includes('fries') || catLower.includes('snack')) return { type: 'img', src: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=500&auto=format&fit=crop&q=80' };
+
+    return { type: 'img', src: assets.cake4 };
+  };
 
   const getScaledPrices = (item) => {
     const basePrice = parseInt(String(item.price).replace(/[^0-9]/g, '')) || 699;
-    const baseOrig = parseInt(String(item.originalPrice).replace(/[^0-9]/g, '')) || (basePrice + 200);
-    const weightKey = selectedWeights[item.id] || '1';
+    const currentWeightStr = selectedWeights[item.id] || '1';
 
-    if (weightKey === 'custom') {
-      const customKg = parseFloat(customWeightVal) || 6;
-      const mult = customKg * 0.85;
-      return {
-        price: `₹${Math.round(basePrice * mult).toLocaleString('en-IN')}`,
-        originalPrice: `₹${Math.round(baseOrig * mult).toLocaleString('en-IN')}`,
-        weightText: `${customKg} Kg (Custom)`
-      };
+    let weightMultiplier = 1;
+    if (currentWeightStr === 'custom') {
+      const parsedVal = parseFloat(customWeightVal) || 6;
+      weightMultiplier = parsedVal;
+    } else {
+      weightMultiplier = parseFloat(currentWeightStr) || 1;
     }
 
-    const kg = parseFloat(weightKey);
-    const mult = kg === 1 ? 1 : kg === 2 ? 1.85 : kg === 3 ? 2.7 : kg === 4 ? 3.5 : 4.3;
+    const currentPrice = Math.round(basePrice * weightMultiplier);
+    const originalPrice = Math.round((basePrice + 150) * weightMultiplier);
+
     return {
-      price: `₹${Math.round(basePrice * mult).toLocaleString('en-IN')}`,
-      originalPrice: `₹${Math.round(baseOrig * mult).toLocaleString('en-IN')}`,
-      weightText: `${kg} Kg`
+      price: `₹${currentPrice}`,
+      originalPrice: `₹${originalPrice}`,
     };
   };
 
-  const filteredItems = activeCategory === 'All'
-    ? items
-    : items.filter((item) => item.category === activeCategory || (activeCategory === 'Cakes' && item.category === 'Cake Item') || (activeCategory === 'Snacks' && item.category === 'Snakes Item'));
+  const isCakeOrDessert = (item) => {
+    const cat = (item.category || '').toLowerCase();
+    const name = (item.name || '').toLowerCase();
+    return (
+      cat.includes('cake') ||
+      cat.includes('desert') ||
+      cat.includes('dessert') ||
+      cat.includes('pastry') ||
+      cat.includes('cupcake') ||
+      cat.includes('brownie') ||
+      cat.includes('sweet') ||
+      cat.includes('cookie') ||
+      cat.includes('donut') ||
+      name.includes('cake') ||
+      name.includes('pastry') ||
+      name.includes('dessert') ||
+      name.includes('cupcake') ||
+      name.includes('sweet') ||
+      name.includes('truffle')
+    );
+  };
+
+  const isFastFoodOrSnack = (item) => {
+    const cat = (item.category || '').toLowerCase();
+    const name = (item.name || '').toLowerCase();
+    return (
+      cat.includes('snack') ||
+      cat.includes('snake') ||
+      cat.includes('burger') ||
+      cat.includes('pizza') ||
+      cat.includes('fast') ||
+      cat.includes('fries') ||
+      cat.includes('pasta') ||
+      cat.includes('roll') ||
+      cat.includes('sandwich') ||
+      cat.includes('salad') ||
+      cat.includes('veg') ||
+      name.includes('burger') ||
+      name.includes('pizza') ||
+      name.includes('pasta') ||
+      name.includes('fries') ||
+      name.includes('roll') ||
+      name.includes('wrap')
+    );
+  };
+
+  const defaultFastFoodItems = [
+    {
+      id: 'ff-1',
+      name: 'Gourmet Cheese Burger',
+      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80',
+      deliveryTime: '20 MINS',
+      weight: '1 Pc',
+      rating: '4.8',
+      discount: '20% OFF',
+      originalPrice: '₹249',
+      price: '₹199',
+      priceValue: 199,
+      category: 'Burgers',
+      desc: 'Juicy grilled patty topped with melted cheddar, lettuce & special sauce.'
+    },
+    {
+      id: 'ff-2',
+      name: 'Woodfired Pepperoni Pizza',
+      image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=80',
+      deliveryTime: '25 MINS',
+      weight: 'Medium 8"',
+      rating: '4.9',
+      discount: '15% OFF',
+      originalPrice: '₹399',
+      price: '₹349',
+      priceValue: 349,
+      category: 'Pizza',
+      desc: 'Crispy sourdough base with mozzarella, pepperoni & tangy tomato sauce.'
+    },
+    {
+      id: 'ff-3',
+      name: 'Crispy Peri Peri Fries',
+      image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=500&auto=format&fit=crop&q=80',
+      deliveryTime: '15 MINS',
+      weight: '250g',
+      rating: '4.7',
+      discount: 'FLAT ₹30 OFF',
+      originalPrice: '₹179',
+      price: '₹149',
+      priceValue: 149,
+      category: 'French Fries',
+      desc: 'Golden crispy crinkle-cut fries tossed in fiery African peri-peri spices.'
+    },
+    {
+      id: 'ff-4',
+      name: 'Loaded Veggie Wrap',
+      image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=500&auto=format&fit=crop&q=80',
+      deliveryTime: '20 MINS',
+      weight: '300g',
+      rating: '4.7',
+      discount: '10% OFF',
+      originalPrice: '₹219',
+      price: '₹189',
+      priceValue: 189,
+      category: 'Fast Food',
+      desc: 'Grilled tortilla stuffed with spicy cottage cheese & crunchy bell peppers.'
+    }
+  ];
+
+  const allItemsCombined = [...items];
+  if (allItemsCombined.filter(isFastFoodOrSnack).length < 4) {
+    defaultFastFoodItems.forEach((ff) => {
+      if (!allItemsCombined.some((i) => i.name === ff.name)) {
+        allItemsCombined.push(ff);
+      }
+    });
+  }
+
+  const filteredItems = allItemsCombined.filter((item) => {
+    if (activeCategory === 'All') return true;
+    if (activeCategory === 'Cakes' || activeCategory === 'Desserts') return isCakeOrDessert(item);
+    if (activeCategory === 'Snacks' || activeCategory === 'Fast Food') return isFastFoodOrSnack(item);
+    if (activeCategory === 'Burgers') return item.category === 'Burgers' || item.name.toLowerCase().includes('burger');
+    if (activeCategory === 'Pizza') return item.category === 'Pizza' || item.name.toLowerCase().includes('pizza');
+    return item.category === activeCategory;
+  });
 
   return (
-    <>
-      {/* Top Announcement Bar from Home Settings */}
-      {settings?.showPromo !== false && settings?.promoMarqueeText && (
-        <div style={{ background: '#f43f5e', color: '#ffffff', textAlign: 'center', padding: '8px 16px', fontWeight: 800, fontSize: '13px' }}>
-          {settings.promoMarqueeText}
-        </div>
-      )}
+    <div className="home-container">
+      {/* Mobile App View (Screen width <= 768px) */}
+      <MobileAppView
+        items={items}
+        categoriesList={categoriesList}
+        dbCategories={dbCategories}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+      />
 
-      {settings?.showHero !== false && <Header />}
+      {/* Desktop & Tablet Home View (100% untouched on screens > 768px) */}
+      <div className="desktop-only-home-view">
+        {settings?.showPromo !== false && settings?.promoMarqueeText && (
+          <div style={{ background: '#f43f5e', color: '#ffffff', textAlign: 'center', padding: '8px 16px', fontWeight: 800, fontSize: '13px' }}>
+            {settings.promoMarqueeText}
+          </div>
+        )}
+
+        {settings?.showHero !== false && <Header />}
 
       <main className="cakezone-home">
         <section className="about-block section-shell">
@@ -191,95 +392,192 @@ const Home = () => {
               <p className="eyebrow">Menu & pricing</p>
               <h2>{settings?.menuTitle || 'Explore Our Category Selection'}</h2>
             </div>
-            <div className="category-marquee" aria-label="Our menu categories">
-              <div className="category-track">
-                {categoriesList.map((category) => (
-                  <button 
-                    key={category} 
-                    type="button"
-                    className={`category-pill ${activeCategory === category ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
+
+            <div className="category-marquee-container" aria-label="Our menu categories">
+              <div className="category-track-circles">
+                {(() => {
+                  let marqueeItems = categoriesList;
+                  if (categoriesList.length > 0) {
+                    while (marqueeItems.length < 24) {
+                      marqueeItems = [...marqueeItems, ...categoriesList];
+                    }
+                  }
+                  return marqueeItems.map((category, idx) => {
+                    const graphic = getCategoryGraphic(category);
+                    const isActive = activeCategory === category;
+
+                    return (
+                      <button 
+                        key={`${category}-${idx}`} 
+                        type="button"
+                        className={`category-circle-pill ${isActive ? 'active' : ''}`}
+                        onClick={() => setActiveCategory(category)}
+                      >
+                        <div className="circle-avatar-ring">
+                          {graphic.type === 'img' ? (
+                            <img src={graphic.src} alt={category} />
+                          ) : (
+                            <span className="emoji-icon">{graphic.emoji}</span>
+                          )}
+                        </div>
+                        <span className="circle-label">{category}</span>
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
-            <div className="product-grid">
-              {filteredItems.map((item) => {
-                const scaled = getScaledPrices(item);
-                const currentWeight = selectedWeights[item.id] || '1';
+            
+            {/* Product Grid Showcases (Cakes & Desserts Section + Fast Food & Snacks Section) */}
+            {(() => {
+              const renderDesktopGrid = (itemList) => {
+                if (!itemList || itemList.length === 0) {
+                  return (
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: '14px', fontWeight: 600 }}>
+                      No items found in this section.
+                    </div>
+                  );
+                }
 
                 return (
-                  <article className="sample-cake-card" key={item.id}>
-                    <div className="card-image-box">
-                      <img src={item.image} alt={item.name} />
-                      <span className="delivery-time-tag">{item.deliveryTime}</span>
-                      <span className="rating-pill">{item.rating} ★</span>
-                      <Link to="/menu" className="quick-add-btn" aria-label={`Add ${item.name} to cart`}>+</Link>
-                    </div>
-                    <div className="card-content-box">
-                      <h3 className="card-item-name">{item.name}</h3>
-                      <p className="card-item-desc">{item.desc}</p>
-                      
-                      <div className="custom-weight-dropdown-wrapper">
-                        <button 
-                          type="button" 
-                          className="weight-dropdown-pill"
-                          onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
-                        >
-                          <span className="weight-text">
-                            {currentWeight === 'custom' ? `${customWeightVal || 6} Kg` : `${currentWeight} Kg`}
-                          </span>
-                          <span className="pink-arrow">▾</span>
-                        </button>
+                  <div className="product-grid">
+                    {itemList.map((item) => {
+                      const scaled = getScaledPrices(item);
+                      const currentWeight = selectedWeights[item.id] || '1';
 
-                        {openDropdownId === item.id && (
-                          <>
-                            <div className="weight-dropdown-overlay" onClick={() => setOpenDropdownId(null)} />
-                            <ul className="weight-dropdown-menu">
-                              {['1', '2', '3', '4', '5'].map((kg) => (
-                                <li 
-                                  key={kg}
-                                  className={currentWeight === kg ? 'active' : ''}
-                                  onClick={() => {
-                                    setSelectedWeights(prev => ({ ...prev, [item.id]: kg }));
-                                    setOpenDropdownId(null);
-                                  }}
-                                >
-                                  <span>{kg} Kg</span>
-                                  {currentWeight === kg && <span className="check-mark">✓</span>}
-                                </li>
-                              ))}
-                              <li 
-                                className={currentWeight === 'custom' ? 'active custom-option' : 'custom-option'}
-                                onClick={() => {
-                                  setCustomModalItem(item);
-                                  setSelectedWeights(prev => ({ ...prev, [item.id]: 'custom' }));
-                                  setOpenDropdownId(null);
-                                }}
+                      return (
+                        <article className="sample-cake-card" key={item.id}>
+                          <div className="card-image-box">
+                            <img src={item.image} alt={item.name} />
+                            <span className="delivery-time-tag">{item.deliveryTime}</span>
+                            <span className="rating-pill">{item.rating} ★</span>
+                            <Link to="/menu" className="quick-add-btn" aria-label={`Add ${item.name} to cart`}>+</Link>
+                          </div>
+                          <div className="card-content-box">
+                            <h3 className="card-item-name">{item.name}</h3>
+                            <p className="card-item-desc">{item.desc || item.category}</p>
+                            
+                            <div className="custom-weight-dropdown-wrapper">
+                              <button 
+                                type="button" 
+                                className="weight-dropdown-pill"
+                                onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
                               >
-                                <span>Custom Weight (6+ Kg)...</span>
-                              </li>
-                            </ul>
-                          </>
-                        )}
-                      </div>
+                                <span className="weight-text">
+                                  {currentWeight === 'custom' ? `${customWeightVal || 6} Kg` : `${currentWeight} Kg`}
+                                </span>
+                                <span className="pink-arrow">▾</span>
+                              </button>
 
-                      <div className="card-price-offer-row">
-                        <span className="card-discount-badge">{item.discount}</span>
-                        <div className="card-price-group">
-                          <strong className="card-current-price">{scaled.price}</strong>
-                          <span className="card-original-price">{scaled.originalPrice}</span>
-                        </div>
-                      </div>
-                      <Link to="/menu" className="card-order-btn">Order now</Link>
-                    </div>
-                  </article>
+                              {openDropdownId === item.id && (
+                                <>
+                                  <div className="weight-dropdown-overlay" onClick={() => setOpenDropdownId(null)} />
+                                  <ul className="weight-dropdown-menu">
+                                    {['1', '2', '3', '4', '5'].map((kg) => (
+                                      <li 
+                                        key={kg}
+                                        className={currentWeight === kg ? 'active' : ''}
+                                        onClick={() => {
+                                          setSelectedWeights(prev => ({ ...prev, [item.id]: kg }));
+                                          setOpenDropdownId(null);
+                                        }}
+                                      >
+                                        <span>{kg} Kg</span>
+                                        {currentWeight === kg && <span className="check-mark">✓</span>}
+                                      </li>
+                                    ))}
+                                    <li 
+                                      className={currentWeight === 'custom' ? 'active custom-option' : 'custom-option'}
+                                      onClick={() => {
+                                        setCustomModalItem(item);
+                                        setSelectedWeights(prev => ({ ...prev, [item.id]: 'custom' }));
+                                        setOpenDropdownId(null);
+                                      }}
+                                    >
+                                      <span>Custom Weight (6+ Kg)...</span>
+                                    </li>
+                                  </ul>
+                                </>
+                              )}
+                            </div>
+
+                            <div className="card-price-offer-row">
+                              <span className="card-discount-badge">{item.discount}</span>
+                              <div className="card-price-group">
+                                <strong className="card-current-price">{scaled.price}</strong>
+                                <span className="card-original-price">{scaled.originalPrice}</span>
+                              </div>
+                            </div>
+                            <Link to="/menu" className="card-order-btn">Order now</Link>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
                 );
-              })}
-            </div>
-            <div className="center-action">
+              };
+
+              if (activeCategory === 'All') {
+                const cakeItems = filteredItems.filter(isCakeOrDessert);
+                const fastFoodItems = filteredItems.filter((i) => isFastFoodOrSnack(i) || !isCakeOrDessert(i));
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4.5rem' }}>
+                    {/* Section 1: Cakes & Sweet Desserts */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                        <div>
+                          <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f43f5e', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: '0.4rem' }}>
+                            🎂 SWEET DELIGHTS
+                          </span>
+                          <h3 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
+                            Artisanal Cakes, Pastries & Desserts
+                          </h3>
+                        </div>
+                        <Link to="/menu" style={{ color: '#f43f5e', fontWeight: 800, fontSize: '1.4rem', textDecoration: 'none' }}>
+                          View All Cakes ➔
+                        </Link>
+                      </div>
+                      {renderDesktopGrid(cakeItems)}
+                    </div>
+
+                    {/* Section 2: Fast Food & Savory Snacks */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                        <div>
+                          <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: '0.4rem' }}>
+                            🍔 FAST FOOD & SAVORY
+                          </span>
+                          <h3 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
+                            Burgers, Woodfired Pizza & Snacks
+                          </h3>
+                        </div>
+                        <Link to="/menu" style={{ color: '#ea580c', fontWeight: 800, fontSize: '1.4rem', textDecoration: 'none' }}>
+                          View All Fast Food ➔
+                        </Link>
+                      </div>
+                      {renderDesktopGrid(fastFoodItems)}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div>
+                  <div style={{ marginBottom: '2rem' }}>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f43f5e', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: '0.4rem' }}>
+                      ✨ SELECTED CATEGORY
+                    </span>
+                    <h3 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
+                      {activeCategory} Collection
+                    </h3>
+                  </div>
+                  {renderDesktopGrid(filteredItems)}
+                </div>
+              );
+            })()}
+
+            <div className="center-action" style={{ marginTop: '4rem' }}>
               <Link to="/menu" className="pink-button">Explore the full menu</Link>
             </div>
           </div>
@@ -319,6 +617,8 @@ const Home = () => {
             </div>
           </div>
         )}
+
+
 
         <section className="service-block section-shell">
           <div className="title-center">
@@ -369,7 +669,8 @@ const Home = () => {
           </section>
         )}
       </main>
-    </>
+      </div>
+    </div>
   );
 };
 

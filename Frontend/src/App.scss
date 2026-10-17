@@ -1,3 +1,9 @@
+@use './variables.scss' as *;
+
 .main-wrapper {
   min-height: 100vh;
+
+  @media (max-width: 768px) {
+    padding-bottom: 100px; /* Generous bottom spacing for all mobile pages to clear fixed MobileBottomNav */
+  }
 }

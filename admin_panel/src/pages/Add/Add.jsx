@@ -34,6 +34,21 @@ const Add = () => {
     category: 'Cake Item',
   });
   const [loading, setLoading] = useState(false);
+  const [dbOffers, setDbOffers] = useState([]);
+
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const res = await axios.get(`${url}/api/offers`);
+        if (res.data && res.data.success && Array.isArray(res.data.data)) {
+          setDbOffers(res.data.data.filter((o) => o.isActive));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchOffers();
+  }, []);
 
   const onChangeHandler = (e) => {
     const { name, value } = e.target;
@@ -44,6 +59,29 @@ const Add = () => {
     setImage(file);
     setPreviewUrl(URL.createObjectURL(file));
     return false; // prevent auto upload
+  };
+
+  const handleOfferSelect = (offerId) => {
+    if (!offerId || offerId === 'NONE') {
+      setData((prev) => ({
+        ...prev,
+        selectedOfferId: 'NONE',
+        offerType: 'PERCENTAGE',
+        offerPercentage: 0,
+        flatAmount: 0,
+      }));
+      return;
+    }
+    const found = dbOffers.find((o) => o._id === offerId);
+    if (found) {
+      setData((prev) => ({
+        ...prev,
+        selectedOfferId: found._id,
+        offerType: found.offerType || (found.flatAmount ? 'FLAT' : 'PERCENTAGE'),
+        offerPercentage: found.offerPercentage || 0,
+        flatAmount: found.flatAmount || 0,
+      }));
+    }
   };
 
   const onSubmitHandler = async () => {
@@ -59,8 +97,12 @@ const Add = () => {
     setLoading(true);
     const formData = new FormData();
     formData.append('name', data.name);
+    if (data.sku) formData.append('sku', data.sku.trim());
     formData.append('description', data.description);
     formData.append('price', Number(data.price));
+    formData.append('offerType', data.offerType || 'PERCENTAGE');
+    formData.append('offerPercentage', Number(data.offerPercentage || 0));
+    formData.append('flatAmount', Number(data.flatAmount || 0));
     formData.append('category', data.category);
     formData.append('image', image);
 
@@ -70,8 +112,13 @@ const Add = () => {
         toast.success('🎉 Product added successfully to inventory!');
         setData({
           name: '',
+          sku: '',
           description: '',
           price: '',
+          selectedOfferId: 'NONE',
+          offerType: 'PERCENTAGE',
+          offerPercentage: 0,
+          flatAmount: 0,
           category: 'Cake Item',
         });
         setImage(null);
@@ -130,19 +177,36 @@ const Add = () => {
 
             {/* Fields Column */}
             <Col xs={24} md={16}>
-              <Form.Item label={<span style={{ fontWeight: 800 }}>Product Title *</span>}>
-                <Input
-                  size="large"
-                  name="name"
-                  value={data.name}
-                  onChange={onChangeHandler}
-                  placeholder="e.g. Royal Belgian Truffle Cake"
-                  style={{ borderRadius: '10px' }}
-                />
-              </Form.Item>
+              <Row gutter={16}>
+                <Col xs={24} sm={16}>
+                  <Form.Item label={<span style={{ fontWeight: 800 }}>Product Title *</span>}>
+                    <Input
+                      size="large"
+                      name="name"
+                      value={data.name}
+                      onChange={onChangeHandler}
+                      placeholder="e.g. Royal Belgian Truffle Cake"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} sm={8}>
+                  <Form.Item label={<span style={{ fontWeight: 800 }}>Product SKU ID</span>}>
+                    <Input
+                      size="large"
+                      name="sku"
+                      value={data.sku || ''}
+                      onChange={onChangeHandler}
+                      placeholder="e.g. SKU-TRUFFLE-101"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
 
               <Row gutter={16}>
-                <Col xs={24} sm={12}>
+                <Col xs={24} sm={8}>
                   <Form.Item label={<span style={{ fontWeight: 800 }}>Price (INR ₹) *</span>}>
                     <Input
                       size="large"
@@ -157,7 +221,33 @@ const Add = () => {
                   </Form.Item>
                 </Col>
 
-                <Col xs={24} sm={12}>
+                <Col xs={24} sm={8}>
+                  <Form.Item label={<span style={{ fontWeight: 800 }}>Offer / Discount</span>}>
+                    <Select
+                      size="large"
+                      value={data.selectedOfferId || 'NONE'}
+                      onChange={handleOfferSelect}
+                      popupMatchSelectWidth={false}
+                      style={{ borderRadius: '10px', width: '100%' }}
+                    >
+                      <Select.Option value="NONE">
+                        <span style={{ color: '#64748b', fontWeight: 600 }}>No Offer (None)</span>
+                      </Select.Option>
+                      {dbOffers.map((off) => (
+                        <Select.Option key={off._id} value={off._id}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0' }}>
+                            <Tag color={off.badgeColor || '#e03c78'} style={{ borderRadius: '10px', fontWeight: 800, margin: 0 }}>
+                              {off.code || (off.offerType === 'FLAT' ? `FLAT ₹${off.flatAmount} OFF` : `${off.offerPercentage}% OFF`)}
+                            </Tag>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>{off.title}</span>
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} sm={8}>
                   <Form.Item label={<span style={{ fontWeight: 800 }}>Product Category *</span>}>
                     <Select
                       size="large"

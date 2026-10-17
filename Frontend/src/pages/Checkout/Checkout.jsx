@@ -1,54 +1,77 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOrders } from '../../context/OrdersContext';
+import Msg91PhoneVerify from '../../Components/Msg91PhoneVerify/Msg91PhoneVerify';
 import { 
   TruckOutlined, 
   CoffeeOutlined, 
   ShopOutlined, 
   EnvironmentOutlined, 
   PhoneOutlined, 
-  LinkOutlined, 
-  PlusOutlined, 
   CheckCircleOutlined, 
   TagOutlined, 
   CloseCircleOutlined,
   QrcodeOutlined,
   UserOutlined,
-  EditOutlined,
-  WarningOutlined
+  WarningOutlined,
+  MobileOutlined,
+  MailOutlined,
+  NotificationOutlined,
+  FilePdfOutlined,
+  PrinterOutlined,
+  MessageOutlined,
+  CheckOutlined
 } from '@ant-design/icons';
 import '../Cart/Cart.scss';
 import './Checkout.scss';
 
 const Checkout = () => {
-  const { cartItems, clearCart, subtotal, deliveryFee, orderPreference, openPreferenceModal, savedAddresses } = useCart();
-  const { user } = useAuth();
+  const { cartItems, clearCart, subtotal, orderPreference, updateOrderPreference, savedAddresses, outlets } = useCart();
+  const { user, updateUserProfile, updateOrderPreferences } = useAuth();
   const { placeOrder } = useOrders();
+
   const [isComplete, setIsComplete] = useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
+
+  // 1. Primary Decision: Fulfillment Type (Delivery / Dine In / Pick Up)
+  const [fulfillmentType, setFulfillmentType] = useState(() => {
+    return orderPreference?.mode || user?.preferredFulfillment || 'delivery';
+  });
+
+  // 2. Separate Order Updates Channel Preference
+  const [orderUpdateChannel, setOrderUpdateChannel] = useState(() => {
+    return orderPreference?.orderUpdateChannel || user?.orderUpdateChannel || 'WHATSAPP_SMS';
+  });
+
+  // 3. Separate Receipt Preference Channel
+  const [receiptChannel, setReceiptChannel] = useState(() => {
+    return orderPreference?.receiptChannel || user?.receiptChannel || user?.receiveReceiptType || 'GMAIL_EMAIL';
+  });
 
   // Coupon state
   const [couponInput, setCouponInput] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
 
-  const mode = orderPreference?.mode || 'delivery';
+  // Dynamic delivery fee calculation based on fulfillment type
+  const deliveryFee = fulfillmentType === 'delivery' ? (subtotal > 0 ? 50 : 0) : 0;
   const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const grandTotal = Math.max(0, subtotal + deliveryFee - couponDiscount);
 
-  // Selected saved address ID or 'new'
+  // Selected saved address ID
   const [selectedAddressId, setSelectedAddressId] = useState(() => {
     return savedAddresses?.[0]?.id || 'new';
   });
 
-  // Form states
+  // Form states (preserved smoothly across dynamic mode switching)
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    phone: savedAddresses?.[0]?.phone || '',
-    tableNumber: orderPreference?.tableNumber || 'Table #1',
-    guestCount: orderPreference?.guestCount || 2,
+    phone: savedAddresses?.[0]?.phone || user?.phone || user?.phoneNumber || '',
+    tableNumber: orderPreference?.tableNumber || '',
+    guestCount: orderPreference?.guestCount || '',
     pickupBranch: orderPreference?.pickupBranch || 'Flagship Bakery - Downtown',
     addressLine: savedAddresses?.[0]?.addressLine || '',
     state: savedAddresses?.[0]?.state || '',
@@ -59,6 +82,14 @@ const Checkout = () => {
     specialInstructions: ''
   });
 
+  useEffect(() => {
+    updateOrderPreference({
+      mode: fulfillmentType,
+      orderUpdateChannel,
+      receiptChannel,
+    });
+  }, [fulfillmentType, orderUpdateChannel, receiptChannel]);
+
   if (!user) return <Navigate to="/signin" replace />;
 
   if (isComplete) return (
@@ -68,7 +99,10 @@ const Checkout = () => {
         <p className="eyebrow">Order Confirmed</p>
         <h1>Thank you for your order!</h1>
         <p>We have received your order and our master bakers are preparing your fresh treats.</p>
-        <Link to="/orders" className="shop-button">View My Orders & Live Status</Link>
+        <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link to="/orders" className="shop-button">View My Orders & Live Status</Link>
+          <Link to="/menu" className="shop-button" style={{ background: '#f1f5f9', color: '#334155' }}>Order More</Link>
+        </div>
       </div>
     </main>
   );
@@ -80,6 +114,30 @@ const Checkout = () => {
       <Link to="/menu" className="shop-button">Explore Cakes</Link>
     </main>
   );
+
+  const handleSelectFulfillment = (mode) => {
+    setFulfillmentType(mode);
+    updateOrderPreference({ mode });
+    if (updateOrderPreferences) {
+      updateOrderPreferences({ mode, orderUpdateChannel, receiptChannel });
+    }
+  };
+
+  const handleSelectUpdateChannel = (channel) => {
+    setOrderUpdateChannel(channel);
+    updateOrderPreference({ orderUpdateChannel: channel });
+    if (updateOrderPreferences) {
+      updateOrderPreferences({ mode: fulfillmentType, orderUpdateChannel: channel, receiptChannel });
+    }
+  };
+
+  const handleSelectReceiptChannel = (channel) => {
+    setReceiptChannel(channel);
+    updateOrderPreference({ receiptChannel: channel });
+    if (updateOrderPreferences) {
+      updateOrderPreferences({ mode: fulfillmentType, orderUpdateChannel, receiptChannel: channel });
+    }
+  };
 
   const handleSelectAddress = (addr) => {
     setSelectedAddressId(addr.id);
@@ -126,21 +184,23 @@ const Checkout = () => {
     setCouponError('');
   };
 
+  const [pendingOrderDetails, setPendingOrderDetails] = useState(null);
+
   const handleSubmit = (event) => {
-    event.preventDefault();
+    if (event) event.preventDefault();
 
     let fulfillmentDetails = {};
 
-    if (mode === 'delivery') {
+    if (fulfillmentType === 'delivery') {
       const activeAddr = savedAddresses.find(a => a.id === selectedAddressId);
       fulfillmentDetails = {
         type: 'Delivery',
         address: activeAddr ? `${activeAddr.addressLine}, ${activeAddr.state}, ${activeAddr.country} - ${activeAddr.pincode}` : `${formData.addressLine}, ${formData.state}, ${formData.country} - ${formData.pincode}`,
         phone: formData.phone,
-        locationLink: activeAddr?.locationLink || formData.locationLink,
+        locationLink: activeAddr?.locationLink || formData.locationLink || '',
         specialInstructions: formData.specialInstructions
       };
-    } else if (mode === 'dinein') {
+    } else if (fulfillmentType === 'dinein') {
       fulfillmentDetails = {
         type: 'Dine In',
         tableNumber: formData.tableNumber,
@@ -157,25 +217,54 @@ const Checkout = () => {
       };
     }
 
-    const initialStatus = mode === 'delivery' ? 'Confirmed' : mode === 'dinein' ? 'Confirmed' : 'Confirmed';
+    // Verification check for non-dinein order types: If user is not logged in or phone not verified
+    if (fulfillmentType !== 'dinein' && (!user || !user.phoneVerified)) {
+      setPendingOrderDetails(fulfillmentDetails);
+      setIsVerifyModalOpen(true);
+      return;
+    }
+
+    executeOrderPlacement(fulfillmentDetails);
+  };
+
+  const executeOrderPlacement = (fulfillmentDetails) => {
+    // Save final customer preferences to profile if logged in
+    if (user && updateOrderPreferences) {
+      updateOrderPreferences({ mode: fulfillmentType, orderUpdateChannel, receiptChannel });
+    }
 
     placeOrder({
-      customerEmail: user.email,
+      customerName: formData.name || user?.name || 'Table Guest',
+      customerEmail: user?.email || 'guest@dinein.com',
       items: cartItems,
       subtotal,
       deliveryFee,
       discount: couponDiscount,
       total: grandTotal,
-      orderPreference,
+      orderPreference: {
+        ...orderPreference,
+        mode: fulfillmentType,
+        orderUpdateChannel,
+        receiptChannel
+      },
       fulfillmentDetails,
       paymentMethod,
       couponCode: appliedCoupon?.code || '',
       cakeMessage: formData.cakeMessage,
-      status: initialStatus
+      status: 'Confirmed'
     });
 
     clearCart();
     setIsComplete(true);
+  };
+
+  const handlePhoneVerifySuccess = (updatedUserData) => {
+    updateUserProfile(updatedUserData);
+    setIsVerifyModalOpen(false);
+    if (pendingOrderDetails) {
+      executeOrderPlacement(pendingOrderDetails);
+      setPendingOrderDetails(null);
+    }
   };
 
   const hasCustomCakes = cartItems.some(i => i.category === 'Customized Cakes' || i.type === 'custom_cake');
@@ -183,17 +272,36 @@ const Checkout = () => {
   return (
     <main className="shop-page">
       <header className="shop-heading">
-        <p className="eyebrow">Checkout</p>
+        <p className="eyebrow">Checkout Workflow</p>
         <h1>Complete Your Order</h1>
       </header>
 
-      {/* Custom Cake Preparation Rule Warning */}
+      {/* Mobile Verification Banner */}
+      {!user?.phoneVerified && (
+        <div className="cake-warning-banner" style={{ background: '#fff1f2', borderColor: '#fecaca', marginBottom: '20px' }}>
+          <WarningOutlined style={{ fontSize: '2rem', color: '#dc2626' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <strong style={{ color: '#9f1239' }}>⚠️ Phone Verification Required:</strong>
+              <span style={{ color: '#475569' }}> Mobile verification is required for order confirmation ({fulfillmentType === 'pickup' ? 'Pick Up' : fulfillmentType === 'dinein' ? 'Dine In' : 'Delivery'}).</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsVerifyModalOpen(true)}
+              style={{ background: '#f43f5e', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+            >
+              Verify Phone via OTP
+            </button>
+          </div>
+        </div>
+      )}
+
       {hasCustomCakes && (
         <div className="cake-warning-banner">
           <WarningOutlined style={{ fontSize: '2rem', color: '#d97706' }} />
           <div>
             <strong>⚠️ Custom Cake Notice:</strong>
-            <span>Custom theme cakes require advance baking (24–48 hours notice). Our head chef will contact you to verify design details.</span>
+            <span> Custom theme cakes require advance baking (24–48 hours notice). Our head chef will contact you to verify design details.</span>
           </div>
         </div>
       )}
@@ -201,34 +309,74 @@ const Checkout = () => {
       <div className="checkout-layout">
         <form onSubmit={handleSubmit} className="checkout-form">
 
-          {/* Fulfillment Summary & Selector */}
+          {/* STEP 1: FULFILLMENT TYPE (PRIMARY DECISION) */}
           <section className="checkout-section-card">
             <div className="section-header-row">
-              <h2>Order Fulfillment & Schedule</h2>
-              <button type="button" className="change-pref-link" onClick={openPreferenceModal}>
-                <EditOutlined /> Change Mode
-              </button>
+              <h2>1. SELECT FULFILLMENT TYPE</h2>
+              <span className="step-badge-pill">Step 1 of 5</span>
             </div>
+            <p className="section-subtitle">How would you like to receive your order?</p>
 
-            <div className="fulfillment-summary-box">
-              <div className="summary-mode-badge">
-                {mode === 'dinein' ? <CoffeeOutlined /> : mode === 'pickup' ? <ShopOutlined /> : <TruckOutlined />}
-                <span>{mode === 'dinein' ? '🍽️ Dine In at Café' : mode === 'pickup' ? '🛍️ Store Pick Up' : '🚚 Doorstep Delivery'}</span>
-              </div>
-              <p className="summary-schedule-text">
-                Scheduled for <strong>{orderPreference.formattedDate || 'Today'}</strong> at <strong>{orderPreference.formattedTime || 'ASAP'}</strong>
-              </p>
+            <div className="fulfillment-options-grid">
+              <button
+                type="button"
+                className={`fulfillment-option-card ${fulfillmentType === 'delivery' ? 'active' : ''}`}
+                onClick={() => handleSelectFulfillment('delivery')}
+              >
+                <div className="icon-wrapper">
+                  <TruckOutlined style={{ fontSize: '2.4rem' }} />
+                </div>
+                <div className="card-info">
+                  <h3>🚚 Delivery</h3>
+                  <p>Fresh doorstep delivery</p>
+                </div>
+                {fulfillmentType === 'delivery' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
+
+              <button
+                type="button"
+                className={`fulfillment-option-card ${fulfillmentType === 'dinein' ? 'active' : ''}`}
+                onClick={() => handleSelectFulfillment('dinein')}
+              >
+                <div className="icon-wrapper">
+                  <CoffeeOutlined style={{ fontSize: '2.4rem' }} />
+                </div>
+                <div className="card-info">
+                  <h3>🍽️ Dine In</h3>
+                  <p>Enjoy at bakery café</p>
+                </div>
+                {fulfillmentType === 'dinein' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
+
+              <button
+                type="button"
+                className={`fulfillment-option-card ${fulfillmentType === 'pickup' ? 'active' : ''}`}
+                onClick={() => handleSelectFulfillment('pickup')}
+              >
+                <div className="icon-wrapper">
+                  <ShopOutlined style={{ fontSize: '2.4rem' }} />
+                </div>
+                <div className="card-info">
+                  <h3>🛍️ Pick Up</h3>
+                  <p>Counter takeaway</p>
+                </div>
+                {fulfillmentType === 'pickup' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
             </div>
           </section>
 
-          {/* Dynamic Required Details Section */}
+          {/* STEP 2: DYNAMIC FULFILLMENT DETAILS (STRICT FIELD HIDING PER ORDER TYPE) */}
           <section className="checkout-section-card">
-            <h2>{mode === 'delivery' ? '🚚 Delivery Information' : mode === 'dinein' ? '🍽️ Café Table & Guest Details' : '🛍️ Store Pickup Details'}</h2>
-            
-            {mode === 'delivery' && (
+            <div className="section-header-row">
+              <h2>2. {fulfillmentType === 'delivery' ? '🚚 Delivery Address & Phone' : fulfillmentType === 'dinein' ? '🍽️ Table Number & Phone' : '🛍️ Pick Up Location & Phone'}</h2>
+              <span className="step-badge-pill">Step 2 of 5</span>
+            </div>
+
+            {/* ORDER TYPE: DELIVERY -> Delivery Address + Mobile Phone + Optional Google Link */}
+            {fulfillmentType === 'delivery' && (
               <div className="form-fields-stack">
                 <div className="saved-addresses-wrapper">
-                  <label className="field-label">Select Delivery Address:</label>
+                  <label className="field-label">Select Saved Delivery Address:</label>
                   <div className="address-cards-grid">
                     {savedAddresses.map((addr) => (
                       <div 
@@ -254,7 +402,7 @@ const Checkout = () => {
                     <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                   </div>
                   <div className="form-group">
-                    <label>Mobile Number *</label>
+                    <label>Mobile Phone Number *</label>
                     <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
                 </div>
@@ -263,61 +411,177 @@ const Checkout = () => {
                   <label>Delivery Address Line *</label>
                   <input type="text" required value={formData.addressLine} onChange={(e) => setFormData({ ...formData, addressLine: e.target.value })} />
                 </div>
+
+                {/* Optional Google Maps Link */}
+                <div className="form-group">
+                  <label>Google Maps Location Link (Optional) 📍</label>
+                  <input 
+                    type="url" 
+                    placeholder="https://maps.google.com/?q=..." 
+                    value={formData.locationLink} 
+                    onChange={(e) => setFormData({ ...formData, locationLink: e.target.value })} 
+                  />
+                </div>
               </div>
             )}
 
-            {mode === 'dinein' && (
+            {/* ORDER TYPE: DINE IN -> Table Number + Mobile Phone + Guests */}
+            {fulfillmentType === 'dinein' && (
               <div className="form-fields-stack">
                 <div className="form-row">
                   <div className="form-group">
-                    <label><QrcodeOutlined /> Table Number *</label>
-                    <select value={formData.tableNumber} onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}>
-                      {Array.from({ length: 15 }, (_, i) => `Table #${i + 1}`).map(t => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                      <option value="Scan QR Code">Scan QR Code on Table 📱</option>
-                    </select>
+                    <label><QrcodeOutlined /> Table Number</label>
+                    <input
+                      type="text"
+                      placeholder="Enter Table Number (e.g. 12)"
+                      value={formData.tableNumber}
+                      onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
+                    />
                   </div>
                   <div className="form-group">
-                    <label><UserOutlined /> Number of Guests *</label>
-                    <select value={formData.guestCount} onChange={(e) => setFormData({ ...formData, guestCount: Number(e.target.value) })}>
-                      {[1, 2, 3, 4, 5, 6, 8, 10].map(g => (
-                        <option key={g} value={g}>{g} {g === 1 ? 'Guest' : 'Guests'}</option>
-                      ))}
-                    </select>
+                    <label><UserOutlined /> Number of Guests</label>
+                    <input
+                      type="number"
+                      min={1}
+                      placeholder="Enter Number of Guests (e.g. 2)"
+                      value={formData.guestCount}
+                      onChange={(e) => setFormData({ ...formData, guestCount: e.target.value })}
+                    />
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Contact Phone Number *</label>
-                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Guest Name (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Enter Guest Name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Mobile Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      placeholder="Enter Mobile Phone (Optional)"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
             )}
 
-            {mode === 'pickup' && (
+            {/* ORDER TYPE: PICK UP -> Store Pickup Location + Mobile Phone Number ONLY */}
+            {fulfillmentType === 'pickup' && (
               <div className="form-fields-stack">
-                <div className="form-group">
-                  <label><EnvironmentOutlined /> Store Pickup Location *</label>
-                  <select value={formData.pickupBranch} onChange={(e) => setFormData({ ...formData, pickupBranch: e.target.value })}>
-                    <option value="Flagship Bakery - Downtown">Flagship Bakery - 100 Cake Avenue, Downtown</option>
-                    <option value="Westside Mall Branch">Westside Mall - Food Court, Level 2</option>
-                    <option value="Eastside Café & Bakehouse">Eastside Bakehouse - 45 Sweet Street</option>
-                  </select>
-                </div>
+                {outlets && outlets.length > 1 && (
+                  <div className="form-group">
+                    <label><EnvironmentOutlined /> Select Store Pickup Location *</label>
+                    <select value={formData.pickupBranch} onChange={(e) => setFormData({ ...formData, pickupBranch: e.target.value })}>
+                      {outlets.map((o, idx) => (
+                        <option key={o.id || idx} value={o.name}>
+                          {o.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="form-group">
-                  <label>Contact Phone Number *</label>
-                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                  <label>Mobile Phone Number ONLY *</label>
+                  <input 
+                    type="tel" 
+                    required 
+                    placeholder="Enter 10-digit mobile number for pickup OTP/SMS"
+                    value={formData.phone} 
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
+                  />
                 </div>
               </div>
             )}
           </section>
 
-          {/* Optional Cake Message & Special Requests */}
+          {/* STEP 4: RECEIPT PREFERENCE */}
           <section className="checkout-section-card">
-            <h2>🎂 Custom Message & Special Requests</h2>
-            <div className="form-group">
+            <div className="section-header-row">
+              <h2>4. RECEIPT PREFERENCE</h2>
+              <span className="step-badge-pill">Step 4 of 5</span>
+            </div>
+            <p className="section-subtitle">How would you like your itemized digital invoice receipt delivered?</p>
+
+            <div className="notification-options-grid">
+              <button
+                type="button"
+                className={`channel-card ${receiptChannel === 'GMAIL_EMAIL' ? 'active priority' : ''}`}
+                onClick={() => handleSelectReceiptChannel('GMAIL_EMAIL')}
+              >
+                <div className="channel-icon">
+                  <MailOutlined style={{ fontSize: '1.8rem', color: '#ea4335' }} />
+                </div>
+                <div className="channel-info">
+                  <h4>📧 Gmail / Email PDF</h4>
+                  <p>Detailed digital invoice PDF sent directly to your email</p>
+                </div>
+                {receiptChannel === 'GMAIL_EMAIL' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
+
+              <button
+                type="button"
+                className={`channel-card ${receiptChannel === 'WHATSAPP_SMS' ? 'active' : ''}`}
+                onClick={() => handleSelectReceiptChannel('WHATSAPP_SMS')}
+              >
+                <div className="channel-icon">
+                  <MobileOutlined style={{ fontSize: '1.8rem', color: '#25d366' }} />
+                </div>
+                <div className="channel-info">
+                  <h4>📱 WhatsApp & SMS Receipt</h4>
+                  <p>Digital receipt link delivered via WhatsApp & SMS</p>
+                </div>
+                {receiptChannel === 'WHATSAPP_SMS' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
+
+              <button
+                type="button"
+                className={`channel-card ${receiptChannel === 'IN_APP' ? 'active' : ''}`}
+                onClick={() => handleSelectReceiptChannel('IN_APP')}
+              >
+                <div className="channel-icon">
+                  <FilePdfOutlined style={{ fontSize: '1.8rem', color: '#8b5cf6' }} />
+                </div>
+                <div className="channel-info">
+                  <h4>📄 In-App Digital Invoice</h4>
+                  <p>Download PDF invoice anytime in your order account</p>
+                </div>
+                {receiptChannel === 'IN_APP' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
+
+              <button
+                type="button"
+                className={`channel-card ${receiptChannel === 'PAPER_PRINT' ? 'active' : ''}`}
+                onClick={() => handleSelectReceiptChannel('PAPER_PRINT')}
+              >
+                <div className="channel-icon">
+                  <PrinterOutlined style={{ fontSize: '1.8rem', color: '#64748b' }} />
+                </div>
+                <div className="channel-info">
+                  <h4>🖨️ Physical Paper Receipt</h4>
+                  <p>Printed paper receipt attached with delivery/pickup</p>
+                </div>
+                {receiptChannel === 'PAPER_PRINT' && <span className="check-badge"><CheckOutlined /></span>}
+              </button>
+            </div>
+          </section>
+
+          {/* STEP 5: CAKE MESSAGE & PAYMENT */}
+          <section className="checkout-section-card">
+            <div className="section-header-row">
+              <h2>5. CAKE MESSAGE & PAYMENT</h2>
+              <span className="step-badge-pill">Step 5 of 5</span>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.2rem' }}>
               <label>Message to Write on Cake (Optional)</label>
               <input 
                 type="text" 
@@ -327,7 +591,8 @@ const Checkout = () => {
                 maxLength={40}
               />
             </div>
-            <div className="form-group">
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <label>Special Instructions / Allergies</label>
               <textarea 
                 rows={2} 
@@ -336,16 +601,13 @@ const Checkout = () => {
                 onChange={(e) => setFormData({ ...formData, specialInstructions: e.target.value })} 
               />
             </div>
-          </section>
 
-          {/* Payment Method */}
-          <section className="checkout-section-card">
-            <h2>Payment Method</h2>
+            <label className="field-label" style={{ fontWeight: 800, marginBottom: '0.8rem', display: 'block' }}>Select Payment Method:</label>
             <div className="payment-options-grid">
               <label className={`payment-card ${paymentMethod === 'cod' ? 'active' : ''}`}>
                 <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
                 <div>
-                  <strong>💵 {mode === 'dinein' ? 'Pay at Table / Counter' : 'Cash on Delivery (COD)'}</strong>
+                  <strong>💵 {fulfillmentType === 'dinein' ? 'Pay at Table / Counter' : 'Cash on Delivery (COD)'}</strong>
                   <p>Pay when your order is served or delivered.</p>
                 </div>
               </label>
@@ -367,7 +629,7 @@ const Checkout = () => {
 
         {/* Sidebar Summary Column */}
         <aside className="order-summary checkout-summary-sidebar">
-          <h2>Order Summary</h2>
+          <h2>Order Review & Summary</h2>
           
           <div className="checkout-items-mini-list">
             {cartItems.map((item) => (
@@ -376,6 +638,22 @@ const Checkout = () => {
                 <strong>₹{(item.priceValue * item.quantity).toFixed(2)}</strong>
               </div>
             ))}
+          </div>
+
+          {/* Active Selections Badges */}
+          <div className="active-preferences-summary-box">
+            <div className="pref-summary-item">
+              <span>Mode:</span>
+              <strong>{fulfillmentType === 'dinein' ? '🍽️ Dine In' : fulfillmentType === 'pickup' ? '🛍️ Pick Up' : '🚚 Delivery'}</strong>
+            </div>
+            <div className="pref-summary-item">
+              <span>Updates:</span>
+              <strong>{orderUpdateChannel === 'WHATSAPP_SMS' ? '📱 WhatsApp & SMS' : orderUpdateChannel === 'SMS_ONLY' ? '💬 SMS Only' : orderUpdateChannel === 'IN_APP' ? '🛎️ In-App' : '📧 Email'}</strong>
+            </div>
+            <div className="pref-summary-item">
+              <span>Receipt:</span>
+              <strong>{receiptChannel === 'GMAIL_EMAIL' ? '📧 Email PDF' : receiptChannel === 'WHATSAPP_SMS' ? '📱 WhatsApp' : receiptChannel === 'PAPER_PRINT' ? '🖨️ Paper' : '📄 In-App'}</strong>
+            </div>
           </div>
 
           <div className="coupon-section-box">
@@ -406,13 +684,21 @@ const Checkout = () => {
             <p><span>Subtotal</span><strong>₹{subtotal.toFixed(2)}</strong></p>
             <p>
               <span>Delivery Fee</span>
-              <strong>{mode === 'delivery' ? `₹${deliveryFee.toFixed(2)}` : <span className="free-badge">FREE (₹0)</span>}</strong>
+              <strong>{fulfillmentType === 'delivery' ? `₹${deliveryFee.toFixed(2)}` : <span className="free-badge">FREE (₹0)</span>}</strong>
             </p>
             {appliedCoupon && <p className="discount-row"><span>Discount ({appliedCoupon.code})</span><strong>-₹{couponDiscount.toFixed(2)}</strong></p>}
             <div className="total-row"><span>Total Payable</span><strong>₹{grandTotal.toFixed(2)}</strong></div>
           </div>
         </aside>
       </div>
+
+      {/* MSG91 Phone Verification Modal */}
+      <Msg91PhoneVerify
+        open={isVerifyModalOpen}
+        onClose={() => setIsVerifyModalOpen(false)}
+        currentPhone={formData.phone || user?.phoneNumber || user?.phone || ''}
+        onSuccess={handlePhoneVerifySuccess}
+      />
     </main>
   );
 };

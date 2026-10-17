@@ -45,8 +45,18 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`🚀 NestJS Cakeshop Backend server running on http://localhost:${port}`);
-  console.log(`📚 Interactive Swagger API Documentation available at http://localhost:${port}/api/docs`);
+  try {
+    await app.listen(port);
+    console.log(`🚀 NestJS Cakeshop Backend server running on http://localhost:${port}`);
+    console.log(`📚 Interactive Swagger API Documentation available at http://localhost:${port}/api/docs`);
+  } catch (error: any) {
+    if (error?.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${port} is already in use!`);
+      console.error(`👉 Run 'npm run kill-port' or 'npx kill-port ${port}' to free the port.`);
+    } else {
+      console.error('❌ Server failed to start:', error);
+    }
+    process.exit(1);
+  }
 }
 bootstrap();

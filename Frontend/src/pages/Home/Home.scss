@@ -1,5 +1,11 @@
 @use '../../variables.scss' as *;
 
+.desktop-only-home-view {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
 .cakezone-home { color: $text-primary; background: $bg-card; }
 .section-shell { width: min(120rem, calc(100% - 4rem)); margin: 0 auto; }
 .eyebrow { margin: 0 0 .5rem; color: $primary; font-size: $font-xs; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
@@ -36,61 +42,117 @@
 
 .menu-block { padding: 6.25rem 0; background: $bg-section; }
 .title-center { margin-bottom: 2.8rem; text-align: center; }
-.product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2rem; }
 
-.category-marquee {
+.category-marquee-container {
   position: relative;
-  overflow-x: auto;
-  margin: 0 0 3rem;
-  padding: 0.8rem 1.2rem;
-  background: $bg-main;
-  border: 0.1rem solid $border;
-  border-radius: $radius-pill;
-  box-shadow: 0 0.4rem 1.5rem rgba(43, 27, 31, 0.03);
-
-  &::-webkit-scrollbar {
-    height: 0.4rem;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba($primary, 0.3);
-    border-radius: $radius-pill;
-  }
-}
-.category-track {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  flex-wrap: wrap;
-}
-.category-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.8rem 1.8rem;
-  border-radius: $radius-pill;
+  overflow: hidden;
+  margin: 0 0 3.5rem;
+  padding: 1rem 0;
   background: transparent;
-  border: 0.1rem solid transparent;
-  color: $text-primary;
-  font-family: $font-body;
-  font-size: $font-sm;
-  font-weight: 600;
-  cursor: pointer;
-  transition: $transition;
-  white-space: nowrap;
-  text-transform: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 
-  &:hover:not(.active) {
-    background: rgba($primary, 0.08);
-    color: $primary;
+  &:hover {
+    .category-track-circles {
+      animation-play-state: paused;
+    }
+  }
+}
+
+.category-track-circles {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+  width: max-content;
+  padding: 0.4rem 1rem;
+  animation: categoryAutoMarquee 20s linear infinite;
+  will-change: transform;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes categoryAutoMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.category-circle-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+
+  &:hover {
+    transform: translateY(-4px) scale(1.04);
+
+    .circle-avatar-ring {
+      border-color: #f43f5e;
+      box-shadow: 0 6px 20px rgba(244, 63, 94, 0.3);
+    }
+    .circle-label {
+      color: #f43f5e;
+    }
   }
 
   &.active {
-    background: $primary;
-    color: $text-white;
+    .circle-avatar-ring {
+      border-color: #f43f5e;
+      box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.2), 0 8px 24px rgba(244, 63, 94, 0.4);
+      transform: scale(1.08);
+    }
+    .circle-label {
+      color: #f43f5e;
+      font-weight: 800;
+    }
+  }
+
+  .circle-avatar-ring {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: 3px solid #ffe4e6;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .emoji-icon {
+      font-size: 32px;
+      line-height: 1;
+    }
+  }
+
+  .circle-label {
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 700;
-    box-shadow: 0 0.4rem 1.2rem rgba($primary, 0.25);
+    color: #475569;
+    white-space: nowrap;
+    transition: color 0.2s ease;
   }
 }
 
@@ -99,27 +161,27 @@
   position: relative;
   z-index: 1;
   background: #ffffff;
-  border-radius: 1.6rem;
+  border-radius: 1.2rem;
   border: 0.1rem solid $border;
-  box-shadow: 0 0.8rem 2.4rem rgba(43, 27, 31, .06);
+  box-shadow: 0 0.4rem 1.6rem rgba(43, 27, 31, .05);
   display: flex;
   flex-direction: column;
   transition: $transition;
 
   &:hover {
-    transform: translateY(-0.4rem);
-    box-shadow: 0 1.2rem 3rem rgba(43, 27, 31, .12);
+    transform: translateY(-0.3rem);
+    box-shadow: 0 0.8rem 2.2rem rgba(43, 27, 31, .1);
     z-index: 30;
   }
 
   .card-image-box {
     position: relative;
     width: 100%;
-    height: 19rem;
+    height: 13rem;
     background-color: #f7f7f8;
     overflow: hidden;
-    border-top-left-radius: 1.5rem;
-    border-top-right-radius: 1.5rem;
+    border-top-left-radius: 1.1rem;
+    border-top-right-radius: 1.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -138,70 +200,70 @@
 
     .delivery-time-tag {
       position: absolute;
-      top: 1rem;
-      left: 1rem;
-      padding: 0.3rem 0.8rem;
+      top: 0.6rem;
+      left: 0.6rem;
+      padding: 0.2rem 0.6rem;
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(0.4rem);
       border-radius: $radius-sm;
       font-family: $font-body;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 800;
       color: $text-secondary;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.08);
     }
 
     .rating-pill {
       position: absolute;
-      bottom: 1rem;
-      left: 1rem;
+      bottom: 0.6rem;
+      left: 0.6rem;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.8rem;
+      gap: 0.2rem;
+      padding: 0.2rem 0.6rem;
       background: #ffffff;
       border-radius: $radius-pill;
       font-family: $font-body;
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #038d63;
-      box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.12);
+      box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.1);
     }
 
     .quick-add-btn {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
-      width: 3.6rem;
-      height: 3.6rem;
+      top: 0.6rem;
+      right: 0.6rem;
+      width: 2.8rem;
+      height: 2.8rem;
       background: #ffffff;
-      border: 0.15rem solid $primary;
-      border-radius: 1rem;
+      border: 0.12rem solid $primary;
+      border-radius: 0.8rem;
       color: $primary;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 700;
       text-decoration: none;
-      box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.12);
+      box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.1);
       transition: $transition;
 
       &:hover {
         background: $primary;
         color: #ffffff;
-        transform: scale(1.1);
+        transform: scale(1.08);
       }
     }
   }
 
   .card-content-box {
-    padding: 1.6rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     flex: 1;
-    gap: 0.6rem;
+    gap: 0.4rem;
     overflow: visible;
     position: relative;
     z-index: 10;
@@ -209,26 +271,26 @@
     .card-item-name {
       margin: 0;
       font-family: $font-body;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 800;
       color: $text-heading;
-      line-height: 1.3;
+      line-height: 1.25;
       text-transform: uppercase;
       letter-spacing: 0.02em;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      min-height: 3.9rem;
+      min-height: 1.8rem;
     }
 
     .card-item-desc {
       margin: 0;
       color: $text-primary;
-      font-size: $font-xs;
-      line-height: 1.45;
+      font-size: 1.05rem;
+      line-height: 1.35;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -237,19 +299,19 @@
       position: relative;
       display: inline-block;
       align-self: flex-start;
-      margin-top: 0.2rem;
+      margin-top: 0.1rem;
 
       .weight-dropdown-pill {
         display: inline-flex;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.45rem 1.2rem;
+        gap: 0.4rem;
+        padding: 0.3rem 0.8rem;
         background: #fff0f3;
-        border: 0.12rem solid rgba($primary, 0.3);
+        border: 0.1rem solid rgba($primary, 0.3);
         border-radius: $radius-pill;
         color: $text-heading;
         font-family: $font-body;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         font-weight: 800;
         cursor: pointer;
         transition: $transition;
@@ -257,7 +319,6 @@
         &:hover {
           background: #ffe4e9;
           border-color: $primary;
-          transform: translateY(-0.1rem);
         }
 
         .weight-text {
@@ -265,7 +326,7 @@
         }
 
         .pink-arrow {
-          font-size: 1.1rem;
+          font-size: 1rem;
           color: #ff1493;
           transition: transform 0.2s ease;
         }
@@ -344,15 +405,15 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 0.4rem 0.6rem;
-      margin-top: 0.4rem;
-      padding-top: 0.6rem;
+      gap: 0.3rem 0.5rem;
+      margin-top: 0.3rem;
+      padding-top: 0.4rem;
       border-top: 0.1rem dashed $border;
 
       .card-discount-badge {
         color: #038d63;
         font-family: $font-body;
-        font-size: 1.15rem;
+        font-size: 1.05rem;
         font-weight: 800;
         letter-spacing: 0.02em;
         white-space: nowrap;
@@ -361,19 +422,19 @@
       .card-price-group {
         display: flex;
         align-items: baseline;
-        gap: 0.5rem;
+        gap: 0.4rem;
         flex-wrap: wrap;
 
         .card-current-price {
           color: $text-heading;
-          font-size: 1.7rem;
+          font-size: 1.4rem;
           font-weight: 800;
           white-space: nowrap;
         }
 
         .card-original-price {
           color: #878787;
-          font-size: 1.15rem;
+          font-size: 1.05rem;
           text-decoration: line-through;
           font-weight: 500;
           white-space: nowrap;
@@ -382,25 +443,25 @@
     }
 
     .card-order-btn {
-      margin-top: 0.8rem;
+      margin-top: 0.6rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 4.2rem;
+      min-height: 3.4rem;
       width: 100%;
-      padding: 0.8rem 1.6rem;
+      padding: 0.5rem 1rem;
       background-color: $primary;
       color: $text-white;
       border-radius: $radius-pill;
       font-family: $font-body;
-      font-size: $font-sm;
+      font-size: 1.2rem;
       font-weight: 700;
       text-decoration: none;
       text-transform: none;
       border: none;
       cursor: pointer;
       transition: $transition;
-      box-shadow: 0 0.4rem 1.4rem rgba($primary, 0.25);
+      box-shadow: 0 0.3rem 1rem rgba($primary, 0.2);
 
       &:hover {
         background-color: $primary-hover;
@@ -475,7 +536,7 @@
   .section-shell { width: min(100% - 3rem, 56rem); }
   .about-block, .combo-block { grid-template-columns: 1fr; padding: 4.5rem 0; }
   .about-image { height: 25rem; }
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  .product-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
   .service-grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .product-card img { height: 18rem; }
   .quotes { grid-template-columns: 1fr; }
@@ -484,7 +545,7 @@
 }
 
 @include mobile {
-  .product-grid { grid-template-columns: 1fr; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
   .category-track { gap: 0.6rem; }
   .category-pill { padding: 0.6rem 1.2rem; font-size: $font-xs; }
   .discount-block div { width: 100%; }

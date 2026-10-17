@@ -852,3 +852,224 @@
   }
 }
 
+@media (max-width: 768px) {
+  .checkout-page-container {
+    background-color: #fff9fa !important;
+    padding: 1.5rem 1rem 9rem !important;
+  }
+}
+
+/* Enhanced E-Commerce UX Checkout Styles */
+.step-badge-pill {
+  padding: 0.4rem 1rem;
+  background: #fff0f3;
+  color: #f43f5e;
+  border: 0.1rem solid rgba(#f43f5e, 0.2);
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  margin: -0.8rem 0 1.4rem;
+  font-weight: 500;
+}
+
+.fulfillment-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  .fulfillment-option-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.4rem 1.6rem;
+    background: #f8fafc;
+    border: 0.15rem solid #e2e8f0;
+    border-radius: 1.6rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    outline: none;
+
+    &:hover {
+      border-color: #f43f5e;
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 0.6rem 1.8rem rgba(244, 63, 94, 0.08);
+    }
+
+    &.active {
+      border-color: #f43f5e;
+      background: #fff0f3;
+      box-shadow: 0 0.6rem 2rem rgba(244, 63, 94, 0.15);
+
+      .icon-wrapper {
+        color: #f43f5e;
+      }
+    }
+
+    .icon-wrapper {
+      color: #64748b;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .card-info {
+      flex: 1;
+      min-width: 0;
+
+      h3 {
+        margin: 0 0 0.2rem;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #1e293b;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1.15rem;
+        color: #64748b;
+      }
+    }
+
+    .check-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      background: #f43f5e;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.notification-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+
+  .channel-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding: 1.4rem 1.6rem;
+    background: #f8fafc;
+    border: 0.15rem solid #e2e8f0;
+    border-radius: 1.6rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    outline: none;
+
+    &:hover {
+      border-color: #f43f5e;
+      background: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    &.active {
+      border-color: #f43f5e;
+      background: #fff0f3;
+      box-shadow: 0 0.4rem 1.4rem rgba(244, 63, 94, 0.12);
+
+      &.priority {
+        border-color: #10b981;
+        background: #ecfdf5;
+
+        .check-badge {
+          background: #10b981;
+        }
+      }
+    }
+
+    .channel-icon {
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .channel-info {
+      flex: 1;
+      min-width: 0;
+
+      h4 {
+        margin: 0 0 0.3rem;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #1e293b;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1.15rem;
+        color: #64748b;
+        line-height: 1.35;
+      }
+    }
+
+    .check-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: #f43f5e;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+  }
+}
+
+.active-preferences-summary-box {
+  background: #f8fafc;
+  border: 0.12rem solid #e2e8f0;
+  border-radius: 1.4rem;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  .pref-summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+
+    span {
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    strong {
+      color: #1e293b;
+      font-weight: 800;
+    }
+  }
+}
+

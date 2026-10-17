@@ -6,15 +6,30 @@ import {
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { SettingsService } from './settings.service';
 
+const uploadDir = join(__dirname, '..', '..', 'uploads');
+if (!existsSync(uploadDir)) {
+  try {
+    mkdirSync(uploadDir, { recursive: true });
+  } catch (e) {}
+}
+
 const multerOptions = {
   storage: diskStorage({
-    destination: join(__dirname, '..', '..', 'uploads'),
+    destination: (req, file, cb) => {
+      if (!existsSync(uploadDir)) {
+        try {
+          mkdirSync(uploadDir, { recursive: true });
+        } catch (e) {}
+      }
+      cb(null, uploadDir);
+    },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
@@ -37,27 +52,15 @@ export class SettingsController {
   @Post()
   @ApiOperation({ summary: 'Update Shop, Home, or Menu settings' })
   @ApiConsumes('multipart/form-data', 'application/json')
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'logo', maxCount: 1 },
-        { name: 'bannerImage', maxCount: 1 },
-        { name: 'promoBannerImage', maxCount: 1 },
-      ],
-      multerOptions,
-    ),
-  )
+  @UseInterceptors(AnyFilesInterceptor(multerOptions))
   async updateSettings(
     @Body() dto: any,
-    @UploadedFiles()
-    files: {
-      logo?: Express.Multer.File[];
-      bannerImage?: Express.Multer.File[];
-      promoBannerImage?: Express.Multer.File[];
-    },
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     const body = dto || {};
     let updatePayload: any = { ...body };
+
+    const getFile = (fieldname: string) => files?.find((f) => f.fieldname === fieldname);
 
     // Safely parse nested json bodies if passed
     if (body.shopSettings) {
@@ -79,15 +82,50 @@ export class SettingsController {
       } catch (e) {}
     }
 
-    if (files?.logo && files.logo[0]) {
-      updatePayload.logo = files.logo[0].filename;
+    if (body.heroBanners) {
+      try {
+        let banners = typeof body.heroBanners === 'string' ? JSON.parse(body.heroBanners) : body.heroBanners;
+        if (Array.isArray(banners)) {
+          banners = banners.map((b: any, idx: number) => {
+            const uploadedFile = getFile(`heroBanner_${idx}`);
+            if (uploadedFile) {
+              b.image = uploadedFile.filename;
+            }
+            return b;
+          });
+          updatePayload.heroBanners = banners;
+        }
+      } catch (e) {}
     }
-    if (files?.bannerImage && files.bannerImage[0]) {
-      updatePayload.bannerImage = files.bannerImage[0].filename;
+
+    if (body.outlets) {
+      try {
+        const parsedOutlets = typeof body.outlets === 'string' ? JSON.parse(body.outlets) : body.outlets;
+        if (Array.isArray(parsedOutlets)) {
+          updatePayload.outlets = parsedOutlets;
+        }
+      } catch (e) {}
     }
-    if (files?.promoBannerImage && files.promoBannerImage[0]) {
-      updatePayload.promoBannerImage = files.promoBannerImage[0].filename;
-    }
+
+    const logoFile = getFile('logo');
+    if (logoFile) updatePayload.logo = logoFile.filename;
+
+    const bannerFile = getFile('bannerImage');
+    if (bannerFile) updatePayload.bannerImage = bannerFile.filename;
+
+    const promoFile = getFile('promoBannerImage');
+    if (promoFile) updatePayload.promoBannerImage = promoFile.filename;
+
+    const footerBannerFile = getFile('footerBannerImage');
+    if (footerBannerFile) updatePayload.footerBannerImage = footerBannerFile.filename;
+
+    // Sanitize any invalid string values like '[object Object]' or file objects
+    Object.keys(updatePayload).forEach((key) => {
+      const val = updatePayload[key];
+      if (typeof val === 'string' && val.includes('[object')) {
+        delete updatePayload[key];
+      }
+    });
 
     // Convert boolean strings
     const boolFields = [
@@ -105,7 +143,7 @@ export class SettingsController {
       }
     });
 
-    // Convert number strings
+    // Convert number strings safely
     const numFields = [
       'deliveryFee',
       'freeDeliveryThreshold',
@@ -114,8 +152,15 @@ export class SettingsController {
       'menuGridCols',
     ];
     numFields.forEach((field) => {
-      if (updatePayload[field] !== undefined && updatePayload[field] !== '') {
-        updatePayload[field] = Number(updatePayload[field]);
+      if (updatePayload[field] !== undefined && updatePayload[field] !== null && updatePayload[field] !== '') {
+        const num = Number(updatePayload[field]);
+        if (!isNaN(num)) {
+          updatePayload[field] = num;
+        } else {
+          delete updatePayload[field];
+        }
+      } else if (updatePayload[field] === '') {
+        delete updatePayload[field];
       }
     });
 

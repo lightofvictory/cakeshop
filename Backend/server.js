@@ -2,10 +2,11 @@ import express from 'express';
 import cors from "cors";
 import { connectDB } from './config/db.js';
 import cakeRouter from './routes/cakesroute.js';
-import userRouter from './routes/UserRouter.js'; // ✅ Make sure this is the correct file path
+import userRouter from './routes/UserRouter.js';
+import employeeRouter from './routes/EmployeeRouter.js';
 
 import dotenv from "dotenv";
-dotenv.config(); // ✅ Make sure this comes before using any environment variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +20,8 @@ connectDB();
 
 // Static & API routes
 app.use('/api/cakes', cakeRouter);
-app.use('/api/users', userRouter); // ✅ Your route is registered here correctly
+app.use('/api/users', userRouter);
+app.use('/api/employees', employeeRouter);
 app.use('/images', express.static('uploads'));
 
 // Test Route

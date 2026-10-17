@@ -13,6 +13,10 @@
   background-color: $bg-main;
   box-shadow: 0 0.4rem 2rem rgba(43, 27, 31, 0.08);
 
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+
   .navbar-content {
     max-width: 120rem;
     width: min(120rem, calc(100% - 4rem));

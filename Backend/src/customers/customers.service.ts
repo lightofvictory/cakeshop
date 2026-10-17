@@ -22,6 +22,12 @@ export class CustomersService {
       existing.address = customerData.address || existing.address;
       existing.city = customerData.city || existing.city;
       existing.pincode = customerData.pincode || existing.pincode;
+      if (customerData.preferredFulfillment) existing.preferredFulfillment = customerData.preferredFulfillment;
+      if (customerData.receiptChannel) {
+        existing.receiptChannel = customerData.receiptChannel;
+        existing.receiveReceiptType = customerData.receiptChannel;
+      }
+      existing.isPreferenceConfigured = true;
       existing.totalOrders += 1;
       existing.totalSpent += orderTotal;
       existing.lastOrderAt = new Date();
@@ -34,6 +40,10 @@ export class CustomersService {
         address: customerData.address || '',
         city: customerData.city || '',
         pincode: customerData.pincode || '',
+        preferredFulfillment: customerData.preferredFulfillment || 'delivery',
+        receiptChannel: customerData.receiptChannel || 'WHATSAPP_SMS',
+        receiveReceiptType: customerData.receiptChannel || 'WHATSAPP_SMS',
+        isPreferenceConfigured: true,
         totalOrders: 1,
         totalSpent: orderTotal,
         lastOrderAt: new Date(),

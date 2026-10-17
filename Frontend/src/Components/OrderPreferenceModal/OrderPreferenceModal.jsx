@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
-import { DatePicker } from 'antd';
-import { TruckOutlined, CoffeeOutlined, ShopOutlined, CloseOutlined, CheckOutlined, QrcodeOutlined, UserOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { useAuth } from '../../context/AuthContext';
+import { DatePicker, Select } from 'antd';
+import {
+  TruckOutlined,
+  CoffeeOutlined,
+  ShopOutlined,
+  CloseOutlined,
+  CheckOutlined,
+  EnvironmentOutlined,
+} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import './OrderPreferenceModal.scss';
@@ -9,154 +17,185 @@ import './OrderPreferenceModal.scss';
 dayjs.extend(utc);
 
 const OrderPreferenceModal = () => {
-  const { orderPreference, updateOrderPreference, isPreferenceModalOpen, closePreferenceModal } = useCart();
+  const { orderPreference, updateOrderPreference, isPreferenceModalOpen, closePreferenceModal, outlets } = useCart();
+  const { user, updateOrderPreferences } = useAuth();
 
-  const [mode, setMode] = useState(orderPreference?.mode || 'delivery');
-  const [dateType, setDateType] = useState(orderPreference?.dateType || 'Today');
-  const [customDate, setCustomDate] = useState(() => dayjs());
-  const [timeSlot, setTimeSlot] = useState(orderPreference?.timeSlot || 'ASAP (25 MINS)');
-  
-  // Specific fulfillment options
-  const [tableNumber, setTableNumber] = useState(orderPreference?.tableNumber || 'Table #1');
-  const [guestCount, setGuestCount] = useState(orderPreference?.guestCount || 2);
-  const [pickupBranch, setPickupBranch] = useState(orderPreference?.pickupBranch || 'Flagship Bakery - Downtown');
+  // 1. Primary Decision: Fulfillment Mode
+  const [mode, setMode] = useState(user?.preferredFulfillment || orderPreference?.mode || 'delivery');
+  const [scheduledDateTime, setScheduledDateTime] = useState(() => {
+    if (orderPreference?.utcScheduledISO) return dayjs(orderPreference.utcScheduledISO);
+    return dayjs();
+  });
+
+  // Fulfillment specific fields
+  const [tableNumber, setTableNumber] = useState(orderPreference?.tableNumber || '');
+  const [guestCount, setGuestCount] = useState(orderPreference?.guestCount || '');
+  const [pickupBranch, setPickupBranch] = useState(orderPreference?.pickupBranch || 'Downtown Bakery Outlet');
 
   useEffect(() => {
-    if (isPreferenceModalOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
+    if (orderPreference) {
+      setMode(user?.preferredFulfillment || orderPreference.mode || 'delivery');
+      if (orderPreference.utcScheduledISO) {
+        setScheduledDateTime(dayjs(orderPreference.utcScheduledISO));
+      }
+      setTableNumber(orderPreference.tableNumber || '');
+      setGuestCount(orderPreference.guestCount || '');
+      setPickupBranch(orderPreference.pickupBranch || 'Downtown Bakery Outlet');
     }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isPreferenceModalOpen]);
+  }, [orderPreference, user]);
 
   if (!isPreferenceModalOpen) return null;
 
-  const getTargetDayjsDate = () => {
-    if (dateType === 'Today') return dayjs();
-    if (dateType === 'Tomorrow') return dayjs().add(1, 'day');
-    return customDate || dayjs();
-  };
-
-  const handleConfirm = () => {
-    const targetDayjs = getTargetDayjsDate();
-    
-    let startHour = 10;
-    if (timeSlot.includes('02:00 PM')) startHour = 14;
-    if (timeSlot.includes('06:00 PM')) startHour = 18;
-    if (timeSlot.includes('08:00 PM')) startHour = 20;
-
-    const utcDateTime = targetDayjs.hour(startHour).minute(0).second(0).utc();
+  const handleConfirm = async () => {
+    const targetDayjs = scheduledDateTime || dayjs();
+    const utcDateTime = targetDayjs.utc();
+    const utcDateStr = utcDateTime.format('YYYY-MM-DD');
     const utcScheduledISO = utcDateTime.toISOString();
 
-    const formattedDate = dateType === 'Today' ? 'Today' : dateType === 'Tomorrow' ? 'Tomorrow' : targetDayjs.format('ddd, DD MMM YYYY');
-    const formattedTime = timeSlot;
+    const formattedDate = targetDayjs.format('ddd, DD MMM YYYY');
+    const formattedTime = targetDayjs.format('hh:mm A');
 
-    updateOrderPreference({
+    // Clean up table number formatting to prevent duplicate "Table" words
+    let cleanTable = tableNumber ? tableNumber.trim() : '';
+
+    const updatedPref = {
       mode,
-      tableNumber,
-      guestCount,
-      pickupBranch,
+      tableNumber: cleanTable || '#1',
+      guestCount: guestCount || '2',
+      pickupBranch: pickupBranch || 'Downtown Bakery Outlet',
+      utcDateStr,
       utcScheduledISO,
       formattedDate,
       formattedTime,
-      dateType,
-      timeSlot
-    });
+      dateType: 'Custom',
+      timeSlot: formattedTime,
+      isConfigured: true,
+    };
+
+    updateOrderPreference(updatedPref);
+
+    if (user) {
+      await updateOrderPreferences({
+        preferredFulfillment: mode,
+        isPreferenceConfigured: true,
+      });
+    }
+
     closePreferenceModal();
   };
 
-  const getModeTitle = () => {
-    if (mode === 'delivery') return 'Delivery';
-    if (mode === 'dinein') return 'Dine In';
-    return 'Store Pick Up';
+  const getConfirmButtonText = () => {
+    if (mode === 'dinein') {
+      const tNo = tableNumber ? (tableNumber.toLowerCase().includes('table') ? tableNumber : `Table #${tableNumber}`) : 'Table #1';
+      const gCnt = guestCount ? `${guestCount} Guests` : '2 Guests';
+      return `Confirm 🍽️ Dine In • ${tNo} (${gCnt})`;
+    }
+    if (mode === 'pickup') {
+      return `Confirm 🛍️ Store Pickup • ${pickupBranch}`;
+    }
+    const timeStr = scheduledDateTime ? scheduledDateTime.format('ddd, DD MMM, hh:mm A') : 'ASAP';
+    return `Confirm 🚚 Delivery • ${timeStr}`;
   };
-
-  const displayDateText = dateType === 'Today' ? 'Today' : dateType === 'Tomorrow' ? 'Tomorrow' : customDate?.format('ddd, DD MMM YYYY');
 
   return (
     <div className="order-pref-backdrop" onClick={closePreferenceModal}>
       <div className="order-pref-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Close Button */}
         <button type="button" className="close-pref-btn" onClick={closePreferenceModal} aria-label="Close modal">
           <CloseOutlined />
         </button>
 
-        <div className="modal-header">
-          <span className="pref-badge">Order Fulfillment</span>
-          <h2>How would you like to receive your order?</h2>
-          <p>Select your preferred order type, table / branch, and time schedule.</p>
+        {/* Modal Header */}
+        <header className="modal-header">
+          <span className="pref-badge">ORDER PREFERENCE</span>
+          <h2>Select Order Type</h2>
+          <p>Choose how you would like to receive your bakes</p>
+        </header>
+
+        {/* 1. Fulfillment Mode Selection Grid */}
+        <div className="section-group">
+          <div className="fulfillment-grid">
+            <button
+              type="button"
+              className={`fulfillment-card ${mode === 'delivery' ? 'active' : ''}`}
+              onClick={() => setMode('delivery')}
+            >
+              <div className="icon">
+                <TruckOutlined style={{ fontSize: '20px' }} />
+              </div>
+              <div className="card-info">
+                <h3>Delivery</h3>
+                <p>Doorstep</p>
+              </div>
+              {mode === 'delivery' && (
+                <span className="check-badge">
+                  <CheckOutlined />
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className={`fulfillment-card ${mode === 'dinein' ? 'active' : ''}`}
+              onClick={() => setMode('dinein')}
+            >
+              <div className="icon">
+                <CoffeeOutlined style={{ fontSize: '20px' }} />
+              </div>
+              <div className="card-info">
+                <h3>Dine In</h3>
+                <p>At Table</p>
+              </div>
+              {mode === 'dinein' && (
+                <span className="check-badge">
+                  <CheckOutlined />
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className={`fulfillment-card ${mode === 'pickup' ? 'active' : ''}`}
+              onClick={() => setMode('pickup')}
+            >
+              <div className="icon">
+                <ShopOutlined style={{ fontSize: '20px' }} />
+              </div>
+              <div className="card-info">
+                <h3>Pick Up</h3>
+                <p>Takeaway</p>
+              </div>
+              {mode === 'pickup' && (
+                <span className="check-badge">
+                  <CheckOutlined />
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* 1. Fulfillment Mode Selection */}
-        <div className="fulfillment-grid">
-          <button 
-            type="button" 
-            className={`fulfillment-card ${mode === 'delivery' ? 'active' : ''}`}
-            onClick={() => setMode('delivery')}
-          >
-            <div className="icon">
-              <TruckOutlined style={{ fontSize: '2.8rem' }} />
-            </div>
-            <div className="card-info">
-              <h3>🚚 Delivery</h3>
-              <p>Fresh doorstep delivery</p>
-            </div>
-            {mode === 'delivery' && <span className="check-badge"><CheckOutlined /></span>}
-          </button>
-
-          <button 
-            type="button" 
-            className={`fulfillment-card ${mode === 'dinein' ? 'active' : ''}`}
-            onClick={() => setMode('dinein')}
-          >
-            <div className="icon">
-              <CoffeeOutlined style={{ fontSize: '2.8rem' }} />
-            </div>
-            <div className="card-info">
-              <h3>🍽️ Dine In</h3>
-              <p>Enjoy at our bakery café</p>
-            </div>
-            {mode === 'dinein' && <span className="check-badge"><CheckOutlined /></span>}
-          </button>
-
-          <button 
-            type="button" 
-            className={`fulfillment-card ${mode === 'pickup' ? 'active' : ''}`}
-            onClick={() => setMode('pickup')}
-          >
-            <div className="icon">
-              <ShopOutlined style={{ fontSize: '2.8rem' }} />
-            </div>
-            <div className="card-info">
-              <h3>🛍️ Pick Up</h3>
-              <p>Counter takeaway</p>
-            </div>
-            {mode === 'pickup' && <span className="check-badge"><CheckOutlined /></span>}
-          </button>
-        </div>
-
-        {/* Dynamic Mode-Specific Controls */}
+        {/* 2. Dynamic Mode-Specific Fields */}
         {mode === 'dinein' && (
           <div className="mode-specific-box">
             <div className="control-row">
               <div className="control-item">
-                <label><QrcodeOutlined /> Select Table Number:</label>
-                <select value={tableNumber} onChange={(e) => setTableNumber(e.target.value)}>
-                  {Array.from({ length: 15 }, (_, i) => `Table #${i + 1}`).map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                  <option value="Scan QR Code">Scan QR Code on Table 📱</option>
-                </select>
+                <label>Table Number / Code</label>
+                <input
+                  type="text"
+                  value={tableNumber}
+                  onChange={(e) => setTableNumber(e.target.value)}
+                  placeholder="e.g. 4"
+                />
               </div>
               <div className="control-item">
-                <label><UserOutlined /> Guests Count:</label>
-                <select value={guestCount} onChange={(e) => setGuestCount(Number(e.target.value))}>
-                  {[1, 2, 3, 4, 5, 6, 8, 10].map(g => (
-                    <option key={g} value={g}>{g} {g === 1 ? 'Guest' : 'Guests'}</option>
-                  ))}
-                </select>
+                <label>Number of Guests</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={guestCount}
+                  onChange={(e) => setGuestCount(e.target.value)}
+                  placeholder="e.g. 2"
+                />
               </div>
             </div>
           </div>
@@ -165,83 +204,58 @@ const OrderPreferenceModal = () => {
         {mode === 'pickup' && (
           <div className="mode-specific-box">
             <div className="control-item full-width">
-              <label><EnvironmentOutlined /> Select Pickup Branch:</label>
-              <select value={pickupBranch} onChange={(e) => setPickupBranch(e.target.value)}>
-                <option value="Flagship Bakery - Downtown">Flagship Bakery - 100 Cake Avenue, Downtown</option>
-                <option value="Westside Mall Branch">Westside Mall - Food Court, Level 2</option>
-                <option value="Eastside Café & Bakehouse">Eastside Bakehouse - 45 Sweet Street</option>
-              </select>
+              <label>
+                <EnvironmentOutlined style={{ color: 'var(--primary)' }} /> Select Pickup Branch
+              </label>
+              <Select
+                value={pickupBranch || undefined}
+                placeholder="Select Pickup Branch"
+                onChange={(val) => setPickupBranch(val)}
+                className="antd-branch-select"
+                popupClassName="custom-antd-branch-popup"
+                getPopupContainer={() => document.body}
+                size="large"
+                style={{ width: '100%' }}
+                options={
+                  outlets && outlets.length > 0
+                    ? outlets.map((o) => {
+                        const name = typeof o === 'string' ? o : (o.name || o.outletName || String(o));
+                        return { value: name, label: name };
+                      })
+                    : [
+                        { value: 'Downtown Bakery Outlet', label: 'Downtown Bakery Outlet' },
+                        { value: 'Indiranagar Flagship Bakery', label: 'Indiranagar Flagship Bakery' },
+                        { value: 'Koramangala Bakes Outlet', label: 'Koramangala Bakes Outlet' },
+                      ]
+                }
+              />
             </div>
           </div>
         )}
 
-        {/* 2. Date Selection (Today, Tomorrow, Calendar DatePicker) */}
+        {/* 3. Schedule Date & Time Selection (For All Order Types) */}
         <div className="section-group">
-          <label className="section-title">Select Date:</label>
-          <div className="date-pill-group">
-            <button 
-              type="button" 
-              className={`date-pill ${dateType === 'Today' ? 'active' : ''}`}
-              onClick={() => setDateType('Today')}
-            >
-              Today
-            </button>
-            <button 
-              type="button" 
-              className={`date-pill ${dateType === 'Tomorrow' ? 'active' : ''}`}
-              onClick={() => setDateType('Tomorrow')}
-            >
-              Tomorrow
-            </button>
-            <button 
-              type="button" 
-              className={`date-pill ${dateType === 'Custom' ? 'active' : ''}`}
-              onClick={() => setDateType('Custom')}
-            >
-              Pick Date 📅
-            </button>
-          </div>
-
-          {dateType === 'Custom' && (
-            <div className="antd-picker-wrapper" style={{ marginTop: '1rem' }}>
-              <DatePicker 
-                className="antd-custom-datepicker"
-                value={customDate}
-                onChange={(val) => val && setCustomDate(val)}
-                disabledDate={(current) => current && current.endOf('day').isBefore(dayjs().startOf('day'))}
-                format="ddd, DD MMM YYYY"
-                size="large"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* 3. Time Slot Selection */}
-        <div className="section-group">
-          <label className="section-title">Select Time Slot:</label>
-          <div className="time-slot-grid">
-            {[
-              'ASAP (25 MINS)',
-              '10:00 AM - 12:00 PM',
-              '02:00 PM - 04:00 PM',
-              '06:00 PM - 08:00 PM',
-              '08:00 PM - 10:00 PM'
-            ].map((slot) => (
-              <button 
-                key={slot}
-                type="button"
-                className={`time-slot-btn ${timeSlot === slot ? 'active' : ''}`}
-                onClick={() => setTimeSlot(slot)}
-              >
-                {slot}
-              </button>
-            ))}
+          <label className="section-title">Schedule Date & Time</label>
+          <div className="antd-picker-wrapper">
+            <DatePicker
+              showTime={{ format: 'hh:mm A', use12Hours: true }}
+              className="antd-custom-datepicker"
+              value={scheduledDateTime}
+              onChange={(val) => val && setScheduledDateTime(val)}
+              disabledDate={(current) => current && current.endOf('day').isBefore(dayjs().startOf('day'))}
+              format="ddd, DD MMM YYYY, hh:mm A"
+              size="large"
+              getPopupContainer={() => document.body}
+              popupClassName="custom-antd-date-popup"
+              placement="bottomLeft"
+              style={{ width: '100%', borderRadius: '12px', cursor: 'pointer' }}
+            />
           </div>
         </div>
 
-        {/* Action button */}
+        {/* 4. Action Confirm Button */}
         <button type="button" className="confirm-pref-btn" onClick={handleConfirm}>
-          Confirm {getModeTitle()} • {displayDateText} ({timeSlot})
+          {getConfirmButtonText()}
         </button>
       </div>
     </div>

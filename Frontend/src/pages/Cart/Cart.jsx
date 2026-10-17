@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { partyEssentials } from '../../assets/partyEssentials';
-import { TruckOutlined, CoffeeOutlined, ShopOutlined, EditOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { TruckOutlined, CoffeeOutlined, ShopOutlined, EditOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import './Cart.scss';
 
 const Cart = () => {
@@ -19,11 +19,28 @@ const Cart = () => {
 
   if (!cartItems.length) {
     return (
-      <main className="shop-page empty-cart">
-        <p className="eyebrow">Your basket</p>
-        <h1>Your cart is empty.</h1>
-        <p>Pick a cake from our freshly baked menu to get started.</p>
-        <Link to="/menu" className="shop-button">Explore cakes</Link>
+      <main className="shop-page empty-cart-container">
+        <div className="empty-cart-card">
+          <div className="empty-cart-illustration">
+            <div className="cart-icon-circle">
+              <ShoppingCartOutlined />
+            </div>
+            <div className="sparkle-badge">✨ Fresh Bakes</div>
+          </div>
+          <span className="empty-cart-eyebrow">YOUR BASKET IS EMPTY</span>
+          <h1 className="empty-cart-title">Your Cart Needs Some Sweetness!</h1>
+          <p className="empty-cart-subtitle">
+            Explore our artisanal handcrafted cakes, gourmet pastries, and party bakes to get started.
+          </p>
+          <div className="empty-cart-actions">
+            <Link to="/menu" className="btn-explore-menu">
+              Explore Our Cake Menu →
+            </Link>
+            <Link to="/menu" className="btn-secondary-addons">
+              Explore All Bakes
+            </Link>
+          </div>
+        </div>
       </main>
     );
   }
@@ -55,7 +72,11 @@ const Cart = () => {
           </div>
           <div className="pref-details">
             <strong>{getPreferenceSummaryText()}</strong>
-            <span>Scheduled for {orderPreference.formattedDate || 'Today'} ({orderPreference.formattedTime || 'ASAP'})</span>
+            <span>
+              {mode === 'dinein'
+                ? 'Immediate Table Service (ASAP)'
+                : `Scheduled for ${orderPreference.formattedDate || 'Today'} (${orderPreference.formattedTime || 'ASAP'})`}
+            </span>
           </div>
         </div>
         <button type="button" className="change-pref-btn" onClick={openPreferenceModal}>

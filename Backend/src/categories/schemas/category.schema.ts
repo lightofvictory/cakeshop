@@ -14,6 +14,9 @@ export class Category {
   @Prop({ required: false })
   description: string;
 
+  @Prop({ required: false })
+  image: string;
+
   @Prop({ required: true, default: 0 })
   displayOrder: number;
 

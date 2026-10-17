@@ -1,11 +1,13 @@
 /* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
 
 const parsePrice = (price) => Number(String(price).replace(/[^0-9.]/g, '')) || 0;
 
 export const CartProvider = ({ children }) => {
+  const { user, requireAuth } = useAuth();
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('mr-pastry-cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -14,24 +16,72 @@ export const CartProvider = ({ children }) => {
   const [orderPreference, setOrderPreference] = useState(() => {
     const saved = localStorage.getItem('mr-pastry-order-pref');
     const todayUtc = new Date().toISOString().split('T')[0];
-    return saved ? JSON.parse(saved) : {
-      mode: 'delivery', // 'delivery' | 'dinein' | 'pickup'
-      tableNumber: 'Table #1',
-      guestCount: 2,
-      pickupBranch: 'Flagship Bakery - Downtown',
-      utcDateStr: todayUtc,
-      formattedDate: 'Today',
-      formattedTime: 'ASAP (25 MINS)',
-      dateType: 'Today',
-      timeSlot: 'ASAP (25 MINS)',
-      isConfigured: false
+    const initial = saved ? JSON.parse(saved) : {};
+    
+    // Check if logged-in user profile has saved preferences
+    const hasUserProfilePref = Boolean(user && (user.isPreferenceConfigured || user.receiptChannel || user.preferredFulfillment));
+    const userMode = user?.preferredFulfillment || initial.mode || 'delivery';
+    const userUpdateChannel = user?.orderUpdateChannel || initial.orderUpdateChannel || 'WHATSAPP_SMS';
+    const userReceipt = user?.receiptChannel || user?.receiveReceiptType || initial.receiptChannel || 'GMAIL_EMAIL';
+
+    return {
+      mode: userMode,
+      tableNumber: initial.tableNumber || '',
+      guestCount: initial.guestCount || '',
+      pickupBranch: initial.pickupBranch || 'Flagship Bakery - Downtown',
+      utcDateStr: initial.utcDateStr || todayUtc,
+      formattedDate: initial.formattedDate || 'Today',
+      formattedTime: initial.formattedTime || 'ASAP (25 MINS)',
+      dateType: initial.dateType || 'Today',
+      timeSlot: initial.timeSlot || 'ASAP (25 MINS)',
+      orderUpdateChannel: userUpdateChannel,
+      receiptChannel: userReceipt,
+      isConfigured: hasUserProfilePref ? true : Boolean(initial.isConfigured)
     };
   });
 
-  const [isPreferenceModalOpen, setIsPreferenceModalOpen] = useState(() => {
-    const saved = localStorage.getItem('mr-pastry-order-pref');
-    return !saved;
-  });
+  const [isPreferenceModalOpen, setIsPreferenceModalOpen] = useState(false);
+
+  const [outlets, setOutlets] = useState([]);
+
+  // Auto-detect Table QR Code Scan parameters (e.g. ?table=12 or ?mode=dinein&table=12)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tableParam = params.get('table') || params.get('tableno') || params.get('tableNumber');
+      const modeParam = params.get('mode');
+
+      if (tableParam || modeParam === 'dinein') {
+        const rawTable = tableParam ? tableParam.trim() : '';
+        const formattedTable = rawTable ? (rawTable.toLowerCase().startsWith('table') ? rawTable : `Table #${rawTable}`) : '';
+
+        setOrderPreference(prev => ({
+          ...prev,
+          mode: 'dinein',
+          tableNumber: formattedTable || prev.tableNumber || '',
+          isConfigured: true,
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to parse QR code URL params:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchOutlets = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/settings');
+        const data = await res.json();
+        if (data && data.success && data.data) {
+          const list = data.data.outlets || (data.data.shopSettings && data.data.shopSettings.outlets) || [];
+          setOutlets(list);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchOutlets();
+  }, []);
 
   const [savedAddresses, setSavedAddresses] = useState(() => {
     const saved = localStorage.getItem('mr-pastry-addresses');
@@ -49,6 +99,19 @@ export const CartProvider = ({ children }) => {
       }
     ];
   });
+
+  // Auto-sync orderPreference whenever user logs in or profile preferences update
+  useEffect(() => {
+    if (user && (user.isPreferenceConfigured || user.receiptChannel || user.preferredFulfillment || user.orderUpdateChannel)) {
+      setOrderPreference(prev => ({
+        ...prev,
+        mode: user.preferredFulfillment || prev.mode || 'delivery',
+        orderUpdateChannel: user.orderUpdateChannel || prev.orderUpdateChannel || 'WHATSAPP_SMS',
+        receiptChannel: user.receiptChannel || user.receiveReceiptType || prev.receiptChannel || 'GMAIL_EMAIL',
+        isConfigured: true,
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     localStorage.setItem('mr-pastry-cart', JSON.stringify(cartItems));
@@ -80,10 +143,20 @@ export const CartProvider = ({ children }) => {
   const closePreferenceModal = () => setIsPreferenceModalOpen(false);
 
   const addToCart = (cake) => {
-    if (!orderPreference.isConfigured) {
+    const isDineIn = orderPreference?.mode === 'dinein';
+    if (!isDineIn && requireAuth && !requireAuth()) return;
+    
+    // Check if user profile already has saved preferences - if yes, no need to ask modal
+    const isProfileConfigured = user && (user.isPreferenceConfigured || user.receiptChannel || user.preferredFulfillment);
+    if (!orderPreference.isConfigured && !isProfileConfigured && !isDineIn) {
       setIsPreferenceModalOpen(true);
     }
-    const item = { ...cake, priceValue: parsePrice(cake.price) };
+    const itemId = cake.id || cake._id || cake.name;
+    const priceVal = typeof cake.priceValue === 'number' && !isNaN(cake.priceValue) && cake.priceValue > 0
+      ? cake.priceValue
+      : parsePrice(cake.price);
+
+    const item = { ...cake, id: itemId, priceValue: priceVal };
     setCartItems((currentItems) => {
       const existingItem = currentItems.find((currentItem) => currentItem.id === item.id);
       return existingItem
@@ -117,8 +190,9 @@ export const CartProvider = ({ children }) => {
     closePreferenceModal,
     savedAddresses,
     addAddress,
-    removeAddress
-  }), [cartItems, itemCount, subtotal, deliveryFee, orderPreference, isPreferenceModalOpen, savedAddresses]);
+    removeAddress,
+    outlets
+  }), [cartItems, itemCount, subtotal, deliveryFee, orderPreference, isPreferenceModalOpen, savedAddresses, outlets]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

@@ -186,7 +186,7 @@ const Order = () => {
                 </Tag>
               </div>
 
-              {/* Customer Info Box */}
+              {/* Customer Info Box & Subsystem Badges */}
               <div className="customer-info-box">
                 <div>
                   <h4 className="cust-name">{order.customer?.name || 'Guest Customer'}</h4>
@@ -194,9 +194,27 @@ const Order = () => {
                     <PhoneOutlined /> {order.customer?.phone}
                   </p>
                 </div>
-                <Tag color="purple" style={{ fontWeight: 800, fontSize: '10px' }}>
-                  {order.orderType === 'DELIVERY' ? '🚚 Delivery' : order.orderType === 'PICKUP' ? '🏪 Pickup' : '🍽️ Dine-In'}
-                </Tag>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                  <Tag color="magenta" style={{ fontWeight: 800, fontSize: '10px' }}>
+                    🌐 {order.orderSource || 'ECOMMERCE'}
+                  </Tag>
+                  <Tag color="purple" style={{ fontWeight: 800, fontSize: '10px' }}>
+                    {order.orderType === 'DELIVERY' || order.fulfillmentType === 'DELIVERY' ? '🚚 Delivery' : order.orderType === 'PICKUP' || order.fulfillmentType === 'PICKUP' ? '🏪 Pickup' : '🍽️ Dine-In'}
+                  </Tag>
+                </div>
+              </div>
+
+              {/* Decoupled Sub-System Status Row */}
+              <div style={{ display: 'flex', gap: '6px', margin: '6px 0 10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '10px', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
+                  Kitchen: {order.kitchenStatus || 'NOT_SENT'}
+                </span>
+                <span style={{ fontSize: '10px', background: '#f3e8ff', color: '#6b21a8', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
+                  Fulfill: {order.fulfillmentStatus || 'PENDING'}
+                </span>
+                <span style={{ fontSize: '10px', background: order.paymentStatus === 'PAID' ? '#dcfce7' : '#fee2e2', color: order.paymentStatus === 'PAID' ? '#166534' : '#991b1b', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
+                  Pay: {order.paymentStatus || 'PENDING'}
+                </span>
               </div>
 
               {/* Items Summary Box */}
@@ -237,13 +255,14 @@ const Order = () => {
                     Details
                   </Button>
 
-                  {order.status === 'NEW' && (
+                  {/* Conditional Status Action Buttons based on Fulfillment Type */}
+                  {(order.status === 'NEW' || order.status === 'ORDER_PLACED') && (
                     <>
                       <Button
                         type="primary"
                         size="small"
                         style={{ backgroundColor: '#10b981', fontWeight: 700 }}
-                        onClick={() => updateStatus(order._id, 'ACCEPTED')}
+                        onClick={() => updateStatus(order._id, 'CONFIRMED')}
                       >
                         Accept
                       </Button>
@@ -262,7 +281,7 @@ const Order = () => {
                     </>
                   )}
 
-                  {order.status === 'ACCEPTED' && (
+                  {(order.status === 'CONFIRMED' || order.status === 'ACCEPTED') && (
                     <Button
                       type="primary"
                       size="small"
@@ -273,36 +292,102 @@ const Order = () => {
                     </Button>
                   )}
 
+                  {/* PREPARING -> READY step tailored by orderType */}
                   {order.status === 'PREPARING' && (
                     <Button
                       type="primary"
                       size="small"
-                      style={{ backgroundColor: '#10b981', fontWeight: 700 }}
-                      onClick={() => updateStatus(order._id, 'READY')}
+                      style={{ backgroundColor: '#0284c7', fontWeight: 700 }}
+                      onClick={() => {
+                        const targetStatus = order.orderType === 'DELIVERY' 
+                          ? 'READY_FOR_DISPATCH' 
+                          : order.orderType === 'PICKUP' 
+                          ? 'READY_FOR_PICKUP' 
+                          : 'READY';
+                        updateStatus(order._id, targetStatus);
+                      }}
                     >
-                      Mark Ready
+                      {order.orderType === 'DELIVERY' ? 'Ready for Dispatch' : order.orderType === 'PICKUP' ? 'Ready for Pickup' : 'Food Ready'}
                     </Button>
                   )}
 
-                  {order.status === 'READY' && order.orderType === 'DELIVERY' && (
+                  {/* Delivery Flow Actions */}
+                  {order.orderType === 'DELIVERY' && order.status === 'READY_FOR_DISPATCH' && (
                     <Button
                       type="primary"
                       size="small"
                       style={{ backgroundColor: '#4f46e5', fontWeight: 700 }}
                       onClick={() => updateStatus(order._id, 'OUT_FOR_DELIVERY')}
                     >
-                      Dispatch
+                      Dispatch & Out for Delivery
                     </Button>
                   )}
 
-                  {(order.status === 'READY' || order.status === 'OUT_FOR_DELIVERY') && (
+                  {order.orderType === 'DELIVERY' && (order.status === 'OUT_FOR_DELIVERY' || order.status === 'DRIVER_ASSIGNED' || order.status === 'PICKED_UP') && (
                     <Button
                       type="primary"
                       size="small"
                       style={{ backgroundColor: '#059669', fontWeight: 700 }}
                       onClick={() => updateStatus(order._id, 'COMPLETED')}
                     >
-                      Complete
+                      Mark Delivered & Complete
+                    </Button>
+                  )}
+
+                  {/* Dine-In Flow Actions */}
+                  {order.orderType === 'DINE_IN' && order.status === 'READY' && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ backgroundColor: '#d97706', fontWeight: 700 }}
+                      onClick={() => updateStatus(order._id, 'SERVED')}
+                    >
+                      Serve to Table
+                    </Button>
+                  )}
+
+                  {order.orderType === 'DINE_IN' && order.status === 'SERVED' && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ backgroundColor: '#0284c7', fontWeight: 700 }}
+                      onClick={() => updateStatus(order._id, 'BILL_REQUESTED')}
+                    >
+                      Generate Bill
+                    </Button>
+                  )}
+
+                  {order.orderType === 'DINE_IN' && (order.status === 'BILL_REQUESTED' || order.status === 'PAYMENT_COMPLETED') && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ backgroundColor: '#059669', fontWeight: 700 }}
+                      onClick={() => updateStatus(order._id, 'COMPLETED')}
+                    >
+                      Complete Dine-In
+                    </Button>
+                  )}
+
+                  {/* Pickup Flow Actions */}
+                  {order.orderType === 'PICKUP' && order.status === 'READY_FOR_PICKUP' && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ backgroundColor: '#10b981', fontWeight: 700 }}
+                      onClick={() => updateStatus(order._id, 'CUSTOMER_ARRIVED')}
+                    >
+                      Customer Arrived
+                    </Button>
+                  )}
+
+                  {order.orderType === 'PICKUP' && (order.status === 'CUSTOMER_ARRIVED' || order.status === 'PICKED_UP') && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ backgroundColor: '#059669', fontWeight: 700 }}
+                      onClick={() => updateStatus(order._id, 'COMPLETED')}
+                    >
+                      Mark Collected & Complete
                     </Button>
                   )}
                 </div>
@@ -323,10 +408,20 @@ const Order = () => {
         {selectedOrder && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', display: 'flex', justify: 'space-between', alignItems: 'center', border: '1px solid #f1f5f9' }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Current Order Status</span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Current Status</span>
               <Tag color={getTagColor(selectedOrder.status)} style={{ fontWeight: 800, textTransform: 'uppercase', padding: '4px 12px' }}>
                 {selectedOrder.status}
               </Tag>
+            </div>
+
+            {/* Fulfillment Specific Header */}
+            <div style={{ background: '#fff0f3', border: '1px solid #f1dddf', padding: '14px', borderRadius: '12px' }}>
+              <p style={{ fontWeight: 800, fontSize: '13px', color: '#2b1b1f', margin: 0 }}>
+                Fulfillment: {selectedOrder.orderType === 'DELIVERY' ? '🚚 Doorstep Delivery' : selectedOrder.orderType === 'PICKUP' ? '🛍️ Store Pick Up' : '🍽️ Café Dine-In'}
+              </p>
+              {selectedOrder.tableNumber && <p style={{ fontSize: '12px', color: '#f50b5a', fontWeight: 700, margin: '4px 0 0' }}>🪑 Table: {selectedOrder.tableNumber} ({selectedOrder.guestCount || 2} Guests)</p>}
+              {selectedOrder.pickupBranch && <p style={{ fontSize: '12px', color: '#475569', fontWeight: 600, margin: '4px 0 0' }}>📍 Branch: {selectedOrder.pickupBranch}</p>}
+              {selectedOrder.pickupDate && <p style={{ fontSize: '12px', color: '#475569', fontWeight: 600, margin: '2px 0 0' }}>📅 Scheduled: {selectedOrder.pickupDate} ({selectedOrder.pickupTime || 'ASAP'})</p>}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -343,6 +438,21 @@ const Order = () => {
                 )}
               </div>
             </div>
+
+            {selectedOrder.statusHistory && selectedOrder.statusHistory.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', margin: 0 }}>Status History Log</h4>
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {selectedOrder.statusHistory.map((log, index) => (
+                    <div key={index} style={{ borderLeft: '2px solid #f43f5e', paddingLeft: '8px' }}>
+                      <strong style={{ fontSize: '12px', color: '#0f172a' }}>{log.status}</strong>
+                      <span style={{ fontSize: '10px', color: '#94a3b8', marginLeft: '6px' }}>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      {log.note && <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0' }}>{log.note}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <h4 style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', margin: 0 }}>Item Breakdown</h4>

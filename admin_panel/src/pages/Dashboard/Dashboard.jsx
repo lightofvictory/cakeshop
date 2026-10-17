@@ -11,6 +11,7 @@ import {
   ShopOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const defaultStats = {
   todayOrders: 0,
@@ -21,6 +22,7 @@ const defaultStats = {
 };
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth();
   const url = 'http://localhost:3000';
   const navigate = useNavigate();
   const [stats, setStats] = useState(defaultStats);
@@ -35,8 +37,9 @@ const Dashboard = () => {
         axios.get(`${url}/api/orders`),
       ]);
 
-      if (statsRes.data && statsRes.data.success && statsRes.data.data) {
-        setStats(statsRes.data.data);
+      const fetchedStats = statsRes.data?.stats || statsRes.data?.data;
+      if (statsRes.data && statsRes.data.success && fetchedStats) {
+        setStats(fetchedStats);
       }
       if (ordersRes.data && ordersRes.data.success && Array.isArray(ordersRes.data.data)) {
         setRecentOrders(ordersRes.data.data.slice(0, 5));
@@ -213,12 +216,13 @@ const Dashboard = () => {
           <Card hoverable styles={{ body: { padding: '20px' } }} style={{ borderRadius: '16px', border: '1px solid #f1f5f9' }}>
             <Statistic
               title={<span style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Today's Revenue</span>}
-              value={stats?.todayRevenue ?? 0}
-              prefix={<DollarOutlined style={{ color: '#10b981', marginRight: '8px' }} />}
-              suffix="₹"
+              value={isAdmin ? (stats?.todayRevenue ?? 0) : '🔒 ***'}
+              prefix={isAdmin ? <span style={{ color: '#10b981', fontWeight: 900, marginRight: '6px' }}>₹</span> : null}
               styles={{ content: { fontWeight: 900, color: '#0f172a' } }}
             />
-            <p style={{ fontSize: '11px', color: '#10b981', fontWeight: 700, margin: '8px 0 0' }}>↑ 8.5% total earnings</p>
+            <p style={{ fontSize: '11px', color: isAdmin ? '#10b981' : '#94a3b8', fontWeight: 700, margin: '8px 0 0' }}>
+              {isAdmin ? '↑ 8.5% total earnings' : 'Financial data (Admin Only)'}
+            </p>
           </Card>
         </Col>
 

@@ -1,220 +1,598 @@
 @use '../../variables.scss' as *;
 
 .footer-container {
-  background-color: $bg-dark;
-  color: $text-footer;
-  padding: 4rem 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(244, 63, 94, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(225, 29, 72, 0.20) 0%, transparent 40%),
+    linear-gradient(145deg, #1f0b15 0%, #2c0e1c 40%, #1c0812 75%, #120409 100%);
+  color: #e2e8f0;
+  padding: 3rem 1.5rem 3rem 1.5rem;
   position: relative;
   overflow: hidden;
+  border-top: 2px solid transparent;
+  border-image: linear-gradient(90deg, rgba(244, 63, 94, 0) 0%, rgba(244, 63, 94, 0.6) 50%, rgba(244, 63, 94, 0)) 1;
+
+  /* Mobile bottom padding for MobileBottomNav across mobile devices */
+  @media (max-width: 768px) {
+    padding-top: 1.5rem;
+    padding-bottom: calc(2rem + 70px + env(safe-area-inset-bottom, 0px));
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 
   .footer-decor-1 {
     position: absolute;
-    top: 0;
-    right: 2.5rem;
-    width: 8rem;
-    height: 8rem;
-    background-color: rgba($accent, 0.1);
+    top: -3rem;
+    right: 2rem;
+    width: 20rem;
+    height: 20rem;
+    background: radial-gradient(circle, rgba(244, 63, 94, 0.25) 0%, rgba(225, 29, 72, 0) 70%);
     filter: blur(4rem);
-    border-radius: $radius-pill;
+    border-radius: 50%;
+    pointer-events: none;
   }
 
   .footer-decor-2 {
     position: absolute;
-    bottom: 0;
-    left: 2.5rem;
-    width: 10rem;
-    height: 10rem;
-    background-color: rgba($primary, 0.1);
-    filter: blur(4rem);
-    border-radius: $radius-pill;
+    bottom: -2rem;
+    left: -2rem;
+    width: 22rem;
+    height: 22rem;
+    background: radial-gradient(circle, rgba(190, 18, 60, 0.22) 0%, rgba(244, 63, 94, 0) 70%);
+    filter: blur(4.5rem);
+    border-radius: 50%;
+    pointer-events: none;
   }
 
   .footer-content {
-    max-width: 120rem;
-    width: min(120rem, calc(100% - 4rem));
+    max-width: 110rem;
+    width: 100%;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     position: relative;
     z-index: 10;
+  }
 
-    @include desktop {
-      grid-template-columns: 2fr 1fr 1.5fr;
-      gap: 4rem;
-      text-align: left;
+  .footer-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+
+    @media (min-width: 992px) {
+      grid-template-columns: repeat(3, 1fr);
+      align-items: stretch;
     }
   }
 
-  .footer-brand {
+  /* 1. Top Soft Pink Brand Banner Card */
+  .footer-brand-banner {
+    background: linear-gradient(135deg, #fdf0f3 0%, #fbe8ec 60%, #f8e1e7 100%);
+    border-radius: 20px;
+    padding: 1.8rem 1.5rem;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 
-    @include desktop {
-      align-items: flex-start;
-    }
-
-    .brand-title {
-      font-family: $font-heading;
-      font-size: $font-xl;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(to right, $primary, $accent);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .brand-desc {
-      font-family: $font-body;
-      font-size: $font-sm;
-      max-width: 32rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-      color: rgba($text-footer, 0.85);
-    }
-
-    .social-icons {
+    .banner-cake-illustration {
       display: flex;
       align-items: center;
-      gap: 1.4rem;
-      margin-top: 1rem;
+      justify-content: center;
+      flex-shrink: 0;
 
-      a {
-        display: inline-flex;
+      img {
+        width: 6.5rem;
+        height: 6.5rem;
+        object-fit: cover;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(220, 38, 38, 0.18);
+
+        @media (max-width: 520px) {
+          width: 5rem;
+          height: 5rem;
+          display: none; /* Hide illustrative cake on very narrow screens for clean layout */
+        }
+      }
+    }
+
+    .banner-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+
+      .brand-header-pill {
+        display: flex;
         align-items: center;
-        justify-content: center;
-        width: 4.8rem;
-        height: 4.8rem;
-        border-radius: 50%;
-        background-color: rgba($primary, 0.15);
-        border: 0.15rem solid rgba($primary, 0.4);
-        transition: $transition;
-        box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.2);
+        gap: 1rem;
 
-        &:hover {
-          background-color: $primary;
-          border-color: $primary;
-          transform: translateY(-0.3rem);
-          box-shadow: 0 0.8rem 2rem rgba($primary, 0.45);
+        .footer-logo {
+          width: 4rem;
+          height: 4rem;
+          border-radius: 12px;
+          object-fit: cover;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+          border: 2px solid #ffffff;
+        }
 
-          .youtube-icon {
-            color: #fff;
+        .brand-titles {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          .brand-name {
+            font-family: $font-heading;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            color: #3b0712;
+            line-height: 1;
+          }
+
+          .brand-sub {
+            font-family: $font-body;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: #881337;
+            margin-top: 0.3rem;
           }
         }
       }
 
-      img {
-        height: 3.2rem;
-        width: 3.2rem;
-        object-fit: contain;
-        transition: $transition;
-        cursor: pointer;
+      .cursive-tag {
+        font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+        font-style: italic;
+        font-size: 1.5rem;
+        color: #e11d48;
+        margin: 0.6rem 0 1rem 0;
+        font-weight: 600;
       }
 
-      .youtube-icon {
-        font-size: 3.2rem;
-        color: $primary;
-        transition: $transition;
+      .social-row {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+
+        .social-icons {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+
+          .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.6rem;
+            height: 3.6rem;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #e11d48;
+            font-size: 1.7rem;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
+            text-decoration: none;
+            transition: all 0.3s ease;
+
+            &:hover {
+              transform: translateY(-3px) scale(1.08);
+              box-shadow: 0 6px 16px rgba(225, 29, 72, 0.3);
+            }
+
+            &.whatsapp {
+              color: #25d366;
+            }
+
+            &.instagram {
+              color: #e1306c;
+            }
+
+            &.youtube {
+              color: #ff0000;
+            }
+          }
+        }
+
+        .follow-doodle {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-family: 'Playfair Display', Georgia, serif;
+          font-style: italic;
+          font-size: 1.3rem;
+          color: #9f1239;
+          font-weight: 600;
+
+          .arrow-doodle {
+            font-size: 1.5rem;
+          }
+
+          @media (max-width: 420px) {
+            display: none;
+          }
+        }
+      }
+    }
+
+    .banner-side-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 1.2rem 1.6rem;
+      border-radius: 30px;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #be123c;
+      box-shadow: 0 4px 15px rgba(225, 29, 72, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      max-width: 16rem;
+      text-align: center;
+
+      @media (max-width: 768px) {
+        display: none;
       }
     }
   }
 
-  .footer-links {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  /* Shared Styling for Dark Footer Cards */
+  .footer-card {
+    background: linear-gradient(145deg, rgba(38, 20, 29, 0.85) 0%, rgba(24, 12, 19, 0.92) 100%);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(244, 63, 94, 0.15);
+    border-radius: 20px;
+    padding: 1.8rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 
-    @include desktop {
-      align-items: flex-start;
-    }
-
-    .links-title {
-      font-family: $font-body;
+    .card-title {
+      font-family: $font-heading;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: $font-base;
-      font-weight: 700;
-      color: $text-white;
+      letter-spacing: 0.14em;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
       margin-bottom: 1.5rem;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      font-family: $font-body;
-      font-weight: 500;
+      align-items: center;
 
-      a {
-        font-size: $font-sm;
-        color: rgba($text-footer, 0.85);
+      .title-bar {
+        width: 3.5rem;
+        height: 3px;
+        background: linear-gradient(90deg, #f43f5e 0%, #be123c 100%);
+        border-radius: 2px;
+        margin-top: 0.6rem;
+      }
+    }
+  }
+
+  /* 2. Explore Card */
+  .footer-card-explore {
+    .explore-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+
+      .explore-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
         text-decoration: none;
-        transition: $transition;
+        transition: all 0.3s ease;
+
+        .icon-circle {
+          width: 5rem;
+          height: 5rem;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: #f43f5e;
+          font-size: 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+          @media (max-width: 480px) {
+            width: 4.2rem;
+            height: 4.2rem;
+            font-size: 1.7rem;
+          }
+        }
+
+        span {
+          font-family: $font-body;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #cbd5e1;
+          margin-top: 0.8rem;
+          transition: color 0.3s ease;
+
+          @media (max-width: 480px) {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+          }
+        }
 
         &:hover {
-          color: $primary;
+          .icon-circle {
+            background: #f43f5e;
+            color: #ffffff;
+            border-color: #f43f5e;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(244, 63, 94, 0.4);
+          }
+
+          span {
+            color: #f43f5e;
+          }
         }
       }
     }
   }
 
-  .footer-contact {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    @include desktop {
-      align-items: flex-start;
-      text-align: left;
-    }
-
-    .contact-title {
-      font-family: $font-body;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-size: $font-base;
-      font-weight: 700;
-      color: $text-white;
-      margin-bottom: 1.5rem;
-    }
-
-    .contact-details {
-      font-family: $font-body;
-      font-size: $font-sm;
+  /* 3. Contact Us Card */
+  .footer-card-contact {
+    .contact-body {
       display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      color: rgba($text-footer, 0.85);
-      line-height: 1.6;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
 
-      p {
-        margin: 0;
+      .contact-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        flex: 1;
+
+        .contact-item {
+          display: flex;
+          align-items: center;
+          gap: 1.2rem;
+          color: #cbd5e1;
+          font-family: $font-body;
+          font-size: 1.3rem;
+          line-height: 1.4;
+
+          .icon-bubble {
+            width: 3.8rem;
+            height: 3.8rem;
+            border-radius: 50%;
+            background: rgba(244, 63, 94, 0.14);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #f43f5e;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+
+          span, a {
+            color: #cbd5e1;
+            text-decoration: none;
+            word-break: break-word;
+            transition: color 0.25s ease;
+          }
+
+          a:hover {
+            color: #f43f5e;
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .contact-decor-sketch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding-left: 1.5rem;
+        border-left: 1px stroke rgba(255, 255, 255, 0.08);
+
+        .cursive-quote {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-style: italic;
+          font-size: 1.6rem;
+          line-height: 1.2;
+          color: rgba(255, 255, 255, 0.35);
+          font-weight: 600;
+        }
+
+        @media (max-width: 520px) {
+          display: none;
+        }
       }
     }
   }
 
+  /* 4. Stay In The Loop Card (Newsletter) */
+  .footer-card-newsletter {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+
+    .newsletter-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+
+      .newsletter-icon {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: rgba(244, 63, 94, 0.14);
+        border: 1px solid rgba(244, 63, 94, 0.3);
+        color: #f43f5e;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .newsletter-text {
+        h4 {
+          font-family: $font-heading;
+          font-size: 1.4rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          color: #ffffff;
+          margin: 0;
+          text-transform: uppercase;
+        }
+
+        p {
+          font-family: $font-body;
+          font-size: 1.2rem;
+          color: #94a3b8;
+          margin: 0.2rem 0 0 0;
+        }
+      }
+    }
+
+    .newsletter-form {
+      .input-pill-wrap {
+        display: flex;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 30px;
+        padding: 4px 4px 4px 14px;
+        transition: border-color 0.3s ease;
+
+        &:focus-within {
+          border-color: #f43f5e;
+          box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2);
+        }
+
+        .input-icon {
+          color: #64748b;
+          font-size: 1.5rem;
+          margin-right: 0.8rem;
+        }
+
+        input {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #ffffff;
+          font-family: $font-body;
+          font-size: 1.3rem;
+          flex: 1;
+          min-width: 0;
+
+          &::placeholder {
+            color: #64748b;
+          }
+        }
+
+        .subscribe-btn {
+          background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+          color: #ffffff;
+          border: none;
+          padding: 10px 22px;
+          border-radius: 24px;
+          font-family: $font-body;
+          font-weight: 700;
+          font-size: 1.3rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.6rem;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+
+          &:hover {
+            background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(244, 63, 94, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  /* 5. Footer Bottom Bar */
   .footer-bottom {
-    max-width: 120rem;
-    width: min(120rem, calc(100% - 4rem));
-    margin: 4rem auto 0;
-    padding-top: 2rem;
-    border-top: 0.1rem solid rgba($text-footer, 0.1);
-    text-align: center;
-    color: rgba($text-footer, 0.6);
-    font-size: $font-xs;
-    font-family: $font-body;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 700;
+    max-width: 110rem;
+    width: 100%;
+    margin: 2rem auto 0;
+    padding-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
     z-index: 10;
+
+    .copyright-text {
+      font-family: $font-body;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.55);
+      text-transform: uppercase;
+      margin: 0;
+      text-align: center;
+    }
+
+    .decorative-heart-line {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.8rem;
+      width: min(20rem, 80%);
+
+      .line {
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .heart-icon {
+        color: #f43f5e;
+        font-size: 1.2rem;
+      }
+    }
+
+    .scroll-top-btn {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 3.8rem;
+      height: 3.8rem;
+      border-radius: 50%;
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #ffffff;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #f43f5e;
+        border-color: #f43f5e;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4);
+      }
+    }
   }
 }

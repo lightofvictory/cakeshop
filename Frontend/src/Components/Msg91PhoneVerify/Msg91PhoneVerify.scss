@@ -1,0 +1,151 @@
+/* MSG91 Phone Verification Modal SCSS Styles */
+.msg91-phone-modal {
+  .ant-modal-content {
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+  }
+
+  .phone-verify-inner {
+    display: flex;
+    flex-direction: column;
+
+    .verify-step-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+
+      .verify-badge {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        background: #fff1f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+
+        &.success {
+          background: #ecfdf5;
+        }
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0 0 20px;
+        line-height: 1.5;
+
+        strong {
+          color: #0f172a;
+          font-weight: 700;
+        }
+      }
+
+      .phone-form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        text-align: left;
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+
+          label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+          }
+
+          .e164-input-wrapper {
+            display: flex;
+            align-items: center;
+            border-radius: 10px;
+            overflow: hidden;
+
+            .country-code {
+              background: #f1f5f9;
+              border: 1px solid #d9d9d9;
+              border-right: none;
+              padding: 0 14px;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              font-weight: 800;
+              font-size: 14px;
+              color: #475569;
+              border-radius: 8px 0 0 8px;
+            }
+
+            .ant-input-affix-wrapper {
+              border-radius: 0 8px 8px 0;
+            }
+          }
+        }
+
+        .error-alert-banner {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #dc2626;
+          padding: 10px 14px;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .action-submit-btn {
+          background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+          border: none;
+          font-weight: 800;
+          height: 44px;
+          border-radius: 10px;
+          box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3);
+
+          &:hover {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+          }
+        }
+
+        .otp-actions-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 6px;
+
+          .link-btn {
+            background: none;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: #f43f5e;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 0;
+
+            &:disabled {
+              color: #94a3b8;
+              cursor: not-allowed;
+            }
+
+            &.secondary {
+              color: #64748b;
+            }
+          }
+        }
+      }
+    }
+  }
+}

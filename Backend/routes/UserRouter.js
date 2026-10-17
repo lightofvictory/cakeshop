@@ -1,11 +1,14 @@
 import express from 'express';
-// import { loginUser, registerUser } from '../controllers/UserController.js';
+import UserController from '../controllers/UserController.js';
 
 const userRouter = express.Router();
 
-import UserController from '../controllers/UserController.js';
-
 userRouter.post("/register", UserController.registerUser);
 userRouter.post("/login", UserController.loginUser);
+userRouter.post("/admin/login", UserController.adminLoginUser);
+userRouter.post("/admin/register", UserController.adminRegisterUser);
+userRouter.get("/profile", UserController.getProfile);
+userRouter.put("/profile", UserController.updateProfile);
+userRouter.post("/verify-firebase-phone", UserController.verifyFirebasePhoneToken);
 
 export default userRouter;

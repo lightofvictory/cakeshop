@@ -49,7 +49,6 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about" },
     { name: "Menu", path: "/menu" },
-    { name: "Extra Special ✨", path: "/extra-special" },
     { name: "Contact Us", path: "/contact" }
   ];
 
@@ -74,28 +73,12 @@ const Navbar = () => {
     <nav className={`navbar-container ${isScrolled ? "scrolled" : ""} ${location.pathname === '/' ? 'home-navbar' : 'page-navbar'}`}>
       <div className="navbar-content">
         
-        {/* Left Section: Logo & Order Preference Pill */}
+        {/* Left Section: Logo */}
         <div className="navbar-left-group">
           <div className="navbar-brand">
             <img src={logoImg} alt="Logo" className="navbar-logo" style={{ objectFit: 'cover', borderRadius: '8px' }} />
             <Link to="/">{settings?.shopName || 'Mr. Pastry'}</Link>
           </div>
-
-          <button 
-            type="button" 
-            className="order-pref-header-btn" 
-            onClick={openPreferenceModal}
-            title="Change order type & schedule"
-          >
-            <span className="mode-icon">{getModeIcon()}</span>
-            <span className="pref-text desktop-pref-text">
-              <strong>{modeLabel}</strong> • {dateText}, {timeText}
-            </span>
-            <span className="pref-text mobile-pref-text">
-              <strong>{modeLabel}</strong>
-            </span>
-            <span className="edit-arrow"><DownOutlined style={{ fontSize: '1rem' }} /></span>
-          </button>
         </div>
 
         {/* Center Section: Navigation Links */}
@@ -118,6 +101,30 @@ const Navbar = () => {
 
         {/* Right Section: Actions */}
         <div className="navbar-actions">
+          <a
+            href="http://localhost:5174"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="admin-portal-link-btn"
+            title="Open Admin Portal"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              backgroundColor: '#f43f5e',
+              color: '#ffffff',
+              fontWeight: 800,
+              fontSize: '12px',
+              textDecoration: 'none',
+              boxShadow: '0 4px 12px rgba(244, 63, 94, 0.3)',
+              marginRight: '8px',
+            }}
+          >
+            👑 Admin Portal
+          </a>
+
           <Link 
             to={user ? "/profile" : "/signin"} 
             className="account-icon-btn desktop-only-link" 

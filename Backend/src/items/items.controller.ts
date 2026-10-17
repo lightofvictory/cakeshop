@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   Delete,
@@ -16,6 +17,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
+import { CloudinaryService } from '../common/cloudinary.service';
 
 const storage = diskStorage({
   destination: './uploads',
@@ -29,13 +31,33 @@ const storage = diskStorage({
 @ApiTags('Items & Cakes')
 @Controller()
 export class ItemsController {
-  constructor(private readonly itemsService: ItemsService) {}
+  constructor(
+    private readonly itemsService: ItemsService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
-  @ApiOperation({ summary: 'Get all items or filter by category' })
-  @ApiQuery({ name: 'category', required: false, description: 'Filter items by category (e.g., Cake Item, Snakes Item)' })
+  @ApiOperation({ summary: 'Get all items or filter by categoryId, category name, itemId, SKU code, or search query' })
+  @ApiQuery({ name: 'categoryId', required: false, description: 'Filter items by category ID' })
+  @ApiQuery({ name: 'itemId', required: false, description: 'Filter items by item ID' })
+  @ApiQuery({ name: 'sku', required: false, description: 'Filter items by SKU code' })
+  @ApiQuery({ name: 'category', required: false, description: 'Filter items by category name' })
+  @ApiQuery({ name: 'search', required: false, description: 'Search items by keyword query' })
   @Get('api/items')
-  async findAll(@Query('category') category?: string) {
-    const data = await this.itemsService.findAll(category);
+  async findAll(
+    @Query('categoryId') categoryId?: string,
+    @Query('itemId') itemId?: string,
+    @Query('sku') sku?: string,
+    @Query('category') category?: string,
+    @Query('search') search?: string,
+  ) {
+    const data = await this.itemsService.findAll(category, search, categoryId, itemId, sku);
+    return { success: true, count: data.length, data };
+  }
+
+  @ApiOperation({ summary: 'Get single item by ID' })
+  @Get('api/items/:id')
+  async findOne(@Param('id') id: string) {
+    const data = await this.itemsService.findOne(id);
     return { success: true, data };
   }
 
@@ -46,7 +68,7 @@ export class ItemsController {
     return { success: true, categories: data };
   }
 
-  @ApiOperation({ summary: 'Create new item with image upload' })
+  @ApiOperation({ summary: 'Create new item with Cloudinary image URL upload' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -56,6 +78,7 @@ export class ItemsController {
         description: { type: 'string', example: 'Rich dark chocolate cake layered with fudge cream' },
         price: { type: 'number', example: 599 },
         category: { type: 'string', example: 'Cake Item' },
+        categoryId: { type: 'string', example: '6a93b08a0be7885f740c9a6d' },
         image: { type: 'string', format: 'binary' },
       },
     },
@@ -64,12 +87,16 @@ export class ItemsController {
   @UseInterceptors(FileInterceptor('image', { storage }))
   async create(
     @Body() createItemDto: CreateItemDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    if (!file) {
-      throw new BadRequestException('Image file is required');
+    const rawImage = file || (createItemDto as any).image;
+    if (!rawImage) {
+      throw new BadRequestException('Image file or Cloudinary image URL is required');
     }
-    const item = await this.itemsService.create(createItemDto, file.filename);
+
+    // Upload to Cloudinary and get full Cloudinary Image URL to store in MongoDB directly
+    const imageUrl = await this.cloudinaryService.uploadImage(rawImage, 'cakeshop_products');
+    const item = await this.itemsService.create(createItemDto, imageUrl);
     return { success: true, message: 'Item added successfully', data: item };
   }
 
@@ -79,35 +106,49 @@ export class ItemsController {
     return this.itemsService.remove(id);
   }
 
+  @ApiOperation({ summary: 'Update item by ID' })
+  @ApiConsumes('multipart/form-data')
+  @Put('api/items/:id')
+  @UseInterceptors(FileInterceptor('image', { storage }))
+  async updateItem(
+    @Param('id') id: string,
+    @Body() updateData: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    let imageUrl: string | undefined;
+    if (file) {
+      imageUrl = await this.cloudinaryService.uploadImage(file, 'cakeshop_products');
+    } else if (updateData.image && typeof updateData.image === 'string') {
+      imageUrl = await this.cloudinaryService.uploadImage(updateData.image, 'cakeshop_products');
+    }
+
+    const item = await this.itemsService.update(id, updateData, imageUrl);
+    return { success: true, message: 'Item updated successfully', data: item };
+  }
+
   // Backward-compatible Legacy Endpoints (/api/cakes)
   @ApiOperation({ summary: 'Add cake (Legacy endpoint for Admin Panel)' })
   @ApiConsumes('multipart/form-data')
   @Post('api/cakes/addcake')
   @UseInterceptors(FileInterceptor('image', { storage }))
-  async addCake(
+  async addCakeLegacy(
     @Body() createItemDto: CreateItemDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    if (!file) {
-      throw new BadRequestException('Image file is required');
+    const rawImage = file || (createItemDto as any).image;
+    if (!rawImage) {
+      throw new BadRequestException('Image file or Cloudinary image URL is required');
     }
-    const cake = await this.itemsService.create(createItemDto, file.filename);
-    return { success: true, message: 'Cake added successfully', data: cake };
+
+    const imageUrl = await this.cloudinaryService.uploadImage(rawImage, 'cakeshop_products');
+    const item = await this.itemsService.create(createItemDto, imageUrl);
+    return { success: true, message: 'Cake added successfully', data: item };
   }
 
-  @ApiOperation({ summary: 'List cakes (Legacy endpoint for Admin Panel)' })
-  @Get('api/cakes/list')
-  async listCakes() {
+  @ApiOperation({ summary: 'Get list of cakes (Legacy endpoint)' })
+  @Get('api/cakes/listcake')
+  async listCakeLegacy() {
     const data = await this.itemsService.findAll();
     return { success: true, data };
-  }
-
-  @ApiOperation({ summary: 'Remove cake by ID (Legacy endpoint)' })
-  @Post('api/cakes/remove')
-  async removeCake(@Body('id') id: string) {
-    if (!id) {
-      throw new BadRequestException('ID is required');
-    }
-    return this.itemsService.remove(id);
   }
 }

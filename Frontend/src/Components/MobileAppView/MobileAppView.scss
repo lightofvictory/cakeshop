@@ -1,0 +1,965 @@
+@use '../../variables.scss' as *;
+
+.mobile-app-wrapper {
+  display: none; // Hidden on desktop & tablet
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fff9fa; // Soft off-white / light cream canvas
+    padding-bottom: 110px; // Increased padding for fixed bottom nav bar clearance
+    overflow-x: clip;
+
+    // 1. Top Mobile Header Bar (With Rich Dark Gradient Background)
+    .mobile-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 8px;
+      background: linear-gradient(135deg, #1C1014 0%, #2B1B1F 35%, #4A222E 70%, #221317 100%);
+      gap: 8px;
+
+      .left-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+
+        .menu-btn {
+          width: 38px;
+          height: 38px;
+          flex-shrink: 0;
+          border-radius: 12px;
+          background: #ffffff;
+          border: 1.5px solid rgba(255, 255, 255, 0.4);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+          cursor: pointer;
+          backdrop-filter: blur(8px);
+          padding: 2px;
+          overflow: hidden;
+          transition: transform 0.2s ease;
+
+          &:active {
+            transform: scale(0.93);
+          }
+
+          .header-shop-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+          }
+
+          .anticon, svg {
+            color: #ffffff !important;
+            font-size: 18px;
+          }
+        }
+
+        .brand-greeting {
+          min-width: 0;
+          overflow: hidden;
+
+          .greeting-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: $text-footer;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .brand-title {
+            font-size: 15px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            margin: 0;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(135deg, #ffffff 0%, #ffe4e6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+
+          .brand-tagline {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin: 1px 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            @media (max-width: 380px) {
+              display: none;
+            }
+          }
+        }
+      }
+
+      .right-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+
+        .admin-badge-btn {
+          padding: 5px 10px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, #ff4757 0%, #ff6b81 50%, #e11d48 100%);
+          color: #ffffff;
+          font-weight: 800;
+          font-size: 10.5px;
+          text-decoration: none;
+          box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          transition: transform 0.2s ease;
+          white-space: nowrap;
+
+          &:active {
+            transform: scale(0.95);
+          }
+        }
+
+        .icon-circle-btn {
+          position: relative;
+          width: 36px;
+          height: 36px;
+          flex-shrink: 0;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          text-decoration: none;
+          backdrop-filter: blur(8px);
+
+          .anticon, svg {
+            color: #ffffff !important;
+            font-size: 16px;
+          }
+
+          .badge-count {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: linear-gradient(135deg, #ff4757 0%, #f43f5e 100%);
+            color: #ffffff;
+            font-size: 9.5px;
+            font-weight: 800;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2B1B1F;
+            box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4);
+
+            &.cart {
+              background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+            }
+          }
+        }
+      }
+    }
+
+    // 2. Search Input Box Row (Stays Sticky at Top on Scroll)
+    .mobile-search-row {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 18px;
+      background: linear-gradient(135deg, #1C1014 0%, #2B1B1F 35%, #4A222E 70%, #221317 100%);
+      border-bottom-left-radius: 2.2rem;
+      border-bottom-right-radius: 2.2rem;
+      box-shadow: 0 0.8rem 2.4rem rgba(43, 27, 31, 0.25);
+
+      .search-pill {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #ffe4e6;
+        border-radius: 22px;
+        padding: 0 16px;
+        height: 46px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+
+        .search-icon {
+          color: #f43f5e;
+          font-size: 16px;
+          margin-right: 10px;
+        }
+
+        input {
+          width: 100%;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 13px;
+          font-weight: 600;
+          color: #1e293b;
+
+          &::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .filter-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+
+        .anticon, svg {
+          color: #ffffff !important;
+          font-size: 20px;
+        }
+      }
+    }
+
+    // Step 2 & 3: Order Type Indicator Bar (Delivery / Pickup / Dine-In)
+    .mobile-order-type-bar {
+      margin: 10px 12px 14px;
+      cursor: pointer;
+
+      .order-type-pill {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, #ffe4e6 0%, #fff0f3 100%);
+        border: 1.5px solid #fecdd3;
+        border-radius: 18px;
+        padding: 9px 16px;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.08);
+
+        .type-icon {
+          font-size: 16px;
+          margin-right: 8px;
+        }
+
+        .type-label {
+          flex: 1;
+          font-size: 12px;
+          font-weight: 800;
+          color: #9f1239;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .change-btn {
+          font-size: 10.5px;
+          font-weight: 900;
+          color: #f43f5e;
+          background: #ffffff;
+          padding: 4px 10px;
+          border-radius: 12px;
+          border: 1px solid #fecdd3;
+        }
+      }
+    }
+
+    // 3. Hero Carousel Banner Card (Multi-stop Vibrant Gradient)
+    .mobile-hero-banner {
+      position: relative;
+      margin: 0 12px 20px;
+      padding: 22px 18px 32px;
+      border-radius: 22px;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #e11d48 0%, #f43f5e 45%, #ff4757 75%, #b91c1c 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(225, 29, 72, 0.35);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        left: -20%;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -40%;
+        right: -10%;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .banner-text-side {
+        width: 58%;
+        z-index: 2;
+
+        .banner-eyebrow {
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          color: #ffe4e6;
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .banner-heading {
+          font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
+          font-size: 20px;
+          font-weight: 900;
+          line-height: 1.2;
+          margin: 0 0 6px;
+          color: #ffffff;
+
+          .gold-text {
+            color: #fef08a;
+            font-style: italic;
+          }
+        }
+
+        .banner-subtext {
+          font-size: 11px;
+          color: #ffe4e6;
+          margin: 0 0 14px;
+          font-weight: 500;
+        }
+
+        .banner-cta-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 18px;
+          border-radius: 20px;
+          background: #ffffff;
+          color: #e11d48;
+          font-size: 12px;
+          font-weight: 900;
+          text-decoration: none;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        }
+      }
+
+      .banner-image-side {
+        width: 44%;
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 100%;
+          height: 140px;
+          object-fit: cover;
+          object-position: center;
+          border-radius: 20px;
+          filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+          -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 35%, rgba(0, 0, 0, 0.85) 65%, rgba(0, 0, 0, 0) 95%);
+          mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 35%, rgba(0, 0, 0, 0.85) 65%, rgba(0, 0, 0, 0) 95%);
+          transition: all 0.4s ease;
+        }
+      }
+
+      .animate-banner-in {
+        animation: bannerFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .banner-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+
+        .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.4);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+          &.active {
+            width: 20px;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+          }
+        }
+      }
+    }
+
+    @keyframes bannerFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    // 4. Horizontal Category Circles (Bubble Bar)
+    .mobile-categories-section {
+      margin-bottom: 24px;
+      overflow: hidden;
+
+      .bubble-scroll-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: max-content;
+        padding: 4px 18px 8px;
+        animation: mobileCategoryMarquee 18s linear infinite;
+
+        &:hover, &:active {
+          animation-play-state: paused;
+        }
+
+        .category-bubble-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: transparent;
+          border: none;
+          outline: none;
+          cursor: pointer;
+          flex-shrink: 0;
+
+          .bubble-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #ffe4e6;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.06);
+            transition: all 0.2s ease;
+
+            img {
+              width: 100%;
+              height: 100%;
+              border-radius: 50%;
+              object-fit: cover;
+            }
+          }
+
+          .bubble-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            margin-top: 6px;
+          }
+
+          &.active {
+            .bubble-avatar {
+              background: #ffe4e6;
+              border-color: #f43f5e;
+              transform: scale(1.06);
+              box-shadow: 0 6px 16px rgba(244, 63, 94, 0.22);
+            }
+
+            .bubble-label {
+              color: #f43f5e;
+              font-weight: 900;
+            }
+          }
+        }
+      }
+    }
+
+    // 5. Popular Picks Section
+    .mobile-popular-section {
+      padding: 0 12px;
+      margin-bottom: 24px;
+      box-sizing: border-box;
+      width: 100%;
+
+      .section-head-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding: 0 4px;
+
+        .section-title {
+          font-size: 16px;
+          font-weight: 900;
+          color: #1e293b;
+          margin: 0;
+        }
+
+        .view-all-link {
+          font-size: 12px;
+          font-weight: 800;
+          color: #f43f5e;
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+
+      .popular-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+
+        .mobile-product-card {
+          position: relative;
+          background: #ffffff;
+          border-radius: 18px;
+          padding: 10px;
+          box-shadow: 0 4px 14px rgba(244, 63, 94, 0.05);
+          border: 1px solid #ffe4e6;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          min-width: 0;
+          box-sizing: border-box;
+
+          .card-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #f43f5e;
+            color: #ffffff;
+            font-size: 8px;
+            font-weight: 900;
+            padding: 3px 7px;
+            border-radius: 8px;
+            z-index: 2;
+            letter-spacing: 0.04em;
+          }
+
+          .wishlist-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #ffe4e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            z-index: 2;
+            cursor: pointer;
+          }
+
+          .card-img-wrap {
+            width: 100%;
+            height: 105px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .card-info-wrap {
+            min-width: 0;
+            width: 100%;
+
+            .card-title {
+              font-size: 12.5px;
+              font-weight: 800;
+              color: #1e293b;
+              margin: 0 0 2px;
+              line-height: 1.25;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              width: 100%;
+            }
+
+            .card-sub {
+              font-size: 10px;
+              color: #94a3b8;
+              margin: 0 0 6px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              width: 100%;
+            }
+
+            .card-rating-row {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              margin-bottom: 6px;
+
+              .rating-num {
+                font-size: 10px;
+                font-weight: 700;
+                color: #64748b;
+              }
+            }
+
+            .card-bottom-row {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 4px;
+              min-width: 0;
+
+              .card-price {
+                font-size: 14px;
+                font-weight: 900;
+                color: #1e293b;
+                white-space: nowrap;
+              }
+
+              .add-btn {
+                width: 30px;
+                height: 30px;
+                flex-shrink: 0;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4);
+                cursor: pointer;
+
+                &:active {
+                  transform: scale(0.92);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 6. Exclusive Promo Offer Banner
+    .mobile-promo-offer-card {
+      margin: 0 12px 36px;
+      padding: 16px 16px;
+      border-radius: 20px;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #fff0f3 0%, #ffe4e6 50%, #fecdd3 100%);
+      border: 1px solid #fecdd3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(244, 63, 94, 0.08);
+
+      .promo-left {
+        width: 60%;
+
+        .promo-tag {
+          font-size: 8px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          color: #f43f5e;
+          display: block;
+          margin-bottom: 2px;
+        }
+
+        .promo-title {
+          font-size: 16px;
+          font-weight: 900;
+          color: #9f1239;
+          margin: 0 0 2px;
+        }
+
+        .promo-sub {
+          font-size: 10px;
+          color: #be123c;
+          margin: 0 0 10px;
+        }
+
+        .promo-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 7px 16px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, #f43f5e 0%, #d90429 100%);
+          color: #ffffff;
+          font-size: 11px;
+          font-weight: 800;
+          text-decoration: none;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35);
+        }
+      }
+
+      .promo-right {
+        position: relative;
+        width: 35%;
+        display: flex;
+        justify-content: center;
+
+        .badge-circle-discount {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ff4757 0%, #e11d48 100%);
+          color: #ffffff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid #ffffff;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35);
+
+          span {
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1;
+          }
+          small {
+            font-size: 7px;
+            font-weight: 700;
+          }
+        }
+
+        img {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          object-fit: cover;
+          box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+      }
+    }
+
+    /* 7. Sub Promo Banner for Best Sales (5-Card Auto-Scrolling Carousel) */
+    .mobile-subpromo-best-sales-section {
+      padding: 0 12px;
+      margin: 20px 0 28px;
+      width: 100%;
+      box-sizing: border-box;
+
+      .subpromo-head-row {
+        margin-bottom: 12px;
+        text-align: left;
+
+        .subpromo-badge-tag {
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          color: #f43f5e;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 2px;
+        }
+
+        .subpromo-main-heading {
+          font-size: 16px;
+          font-weight: 900;
+          color: #0f172a;
+          margin: 0;
+        }
+      }
+
+      .subpromo-carousel-card {
+        border-radius: 20px;
+        padding: 18px 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        transition: background 0.4s ease;
+
+        .animate-subpromo-fade {
+          animation: subpromoFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .subpromo-text-col {
+          flex: 1;
+          padding-right: 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          .subpromo-card-tag {
+            font-size: 9px;
+            font-weight: 900;
+            color: #64748b;
+            margin-bottom: 4px;
+            letter-spacing: 0.04em;
+          }
+
+          .subpromo-card-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #1e293b;
+            margin: 0 0 6px;
+            line-height: 1.25;
+          }
+
+          .subpromo-offer-pill {
+            font-size: 10px;
+            font-weight: 900;
+            color: #ffffff;
+            background: #0f172a;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            letter-spacing: 0.04em;
+          }
+
+          .subpromo-card-desc {
+            font-size: 10.5px;
+            color: #475569;
+            margin: 0 0 12px;
+            line-height: 1.4;
+          }
+
+          .subpromo-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 7px 16px;
+            border-radius: 16px;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+
+            &:active {
+              transform: scale(0.96);
+            }
+          }
+        }
+
+        .subpromo-img-col {
+          position: relative;
+          width: 90px;
+          height: 90px;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .corner-sale-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            padding: 3px 7px;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 900;
+            border: 2px solid #ffffff;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            z-index: 2;
+          }
+
+          img {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffffff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+          }
+        }
+
+        .subpromo-carousel-dots {
+          position: absolute;
+          bottom: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 6px;
+
+          .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.2);
+            transition: all 0.3s ease;
+
+            &.active {
+              width: 18px;
+              border-radius: 10px;
+              background: #0f172a;
+              box-shadow: 0 0 6px rgba(15, 23, 42, 0.3);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes subpromoFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mobileCategoryMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

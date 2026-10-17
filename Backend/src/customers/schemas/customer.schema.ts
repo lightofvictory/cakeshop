@@ -35,6 +35,21 @@ export class Customer {
   @Prop({ default: '' })
   notes: string;
 
+  @Prop({ default: 'delivery' })
+  preferredFulfillment: string;
+
+  @Prop({ default: 'WHATSAPP_SMS' })
+  orderUpdateChannel: string;
+
+  @Prop({ default: 'GMAIL_EMAIL' })
+  receiptChannel: string;
+
+  @Prop({ default: 'WHATSAPP_SMS' })
+  receiveReceiptType: string;
+
+  @Prop({ default: false })
+  isPreferenceConfigured: boolean;
+
   @Prop({ default: Date.now })
   lastOrderAt: Date;
 }

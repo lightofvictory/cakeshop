@@ -1,8 +1,10 @@
 import { cakeImages } from '../../assets/cakeimages/Menus_Image.js';
+import { assets } from '../../assets/assets.js';
 import { useCart } from '../../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
-import { Button, Input, Modal, Rate, notification, DatePicker, Select } from 'antd';
+import axios from 'axios';
+import { Button, Input, Modal, Rate, notification, DatePicker, Select, Drawer } from 'antd';
 import { 
   customizedCakesCategories, 
   dessertsBakery, 
@@ -26,6 +28,7 @@ import {
   SafetyCertificateOutlined,
   CheckCircleOutlined
 } from '@ant-design/icons';
+import { useDebounce } from '../../utils/useDebounce';
 import "./Menu.scss";
 
 const categoryLabels = {
@@ -35,13 +38,127 @@ const categoryLabels = {
   PREMIUM_CAKES: "Premium Cakes"
 };
 
+const browseCategoryCards = [
+  {
+    key: 'CAKES',
+    title: 'Cakes',
+    subtitle: 'Classic & Premium Cakes',
+    itemsCount: '24 items',
+    icon: '🎂',
+    images: [
+      'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500&auto=format&fit=crop&q=80',
+    ],
+  },
+  {
+    key: 'CUSTOM',
+    title: 'Customized Cakes',
+    subtitle: 'Personalized for your special moments',
+    itemsCount: '12 items',
+    icon: '🎨',
+    images: [
+      'https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1562772186-3689454922ef?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=500&auto=format&fit=crop&q=80',
+    ],
+  },
+  {
+    key: 'DESSERTS',
+    title: 'Desserts & Bakery',
+    subtitle: 'Cupcakes, Pastries, Brownies & more',
+    itemsCount: '18 items',
+    icon: '🧁',
+    images: [
+      'https://images.unsplash.com/photo-1587314168485-3236d6710814?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80',
+    ],
+  },
+  {
+    key: 'SNACKS',
+    title: 'Snacks & Fast Food',
+    subtitle: 'Savory burgers, pizza & bites',
+    itemsCount: '15 items',
+    icon: '🍔',
+    images: [
+      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop&q=80',
+    ],
+  },
+  {
+    key: 'BEVERAGES',
+    title: 'Beverages',
+    subtitle: 'Cold Coffee, Tea, Shakes & Drinks',
+    itemsCount: '9 items',
+    icon: '☕',
+    images: [
+      'https://images.unsplash.com/photo-1541167760496-1628856ab772?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=500&auto=format&fit=crop&q=80',
+    ],
+  },
+  {
+    key: 'PARTY',
+    title: 'Party Essentials',
+    subtitle: 'Candles, Decor, Gifts & Candles',
+    itemsCount: '8 items',
+    icon: '🎉',
+    images: [
+      'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=500&auto=format&fit=crop&q=80',
+    ],
+  },
+];
+
+// Helper Component: Auto-scroll images inside each card every 5 seconds
+const CategoryAutoImage = ({ images, title }) => {
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIdx((prev) => (prev + 1) % images.length);
+    }, 5000); // 5 sec auto scroll
+
+    return () => clearInterval(interval);
+  }, [images]);
+
+  return (
+    <div className="cat-card-img-col">
+      {images.map((imgSrc, i) => (
+        <img
+          key={i}
+          src={imgSrc}
+          alt={`${title} ${i + 1}`}
+          className={`cat-auto-img ${i === currentIdx ? 'active' : ''}`}
+          onError={(e) => {
+            e.target.src = assets.cake3;
+          }}
+        />
+      ))}
+      <div className="cat-img-dots-indicator">
+        {images.map((_, i) => (
+          <span key={i} className={`dot ${i === currentIdx ? 'active' : ''}`} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Menu = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlQueryParam = searchParams.get('search') || searchParams.get('q') || '';
+
     const { addToCart, cartItems, updateQuantity } = useCart();
     const [ratings, setRatings] = useState(() => JSON.parse(localStorage.getItem('mr-pastry-ratings') || '{}'));
     const [reviews, setReviews] = useState(() => JSON.parse(localStorage.getItem('mr-pastry-reviews') || '{}'));
     const [selectedCake, setSelectedCake] = useState(null);
     const [selectedWeights, setSelectedWeights] = useState({});
     const [selectedVariants, setSelectedVariants] = useState({});
+    const [likedItems, setLikedItems] = useState({});
     const [cakeMessage, setCakeMessage] = useState('');
     const [openDropdownId, setOpenDropdownId] = useState(null);
     
@@ -57,13 +174,28 @@ const Menu = () => {
     const [activeTab, setActiveTab] = useState('ALL');
 
     // Sidebar & Top Bar Filter States
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(urlQueryParam);
+    const debouncedSearchQuery = useDebounce(searchQuery, 400);
+
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('ALL');
     const [selectedPriceFilter, setSelectedPriceFilter] = useState('ALL');
     const [selectedRatingFilter, setSelectedRatingFilter] = useState('ALL');
     const [dietFilter, setDietFilter] = useState('ALL'); // ALL, VEG, EGGLESS
     const [sortBy, setSortBy] = useState('DEFAULT');
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+    const updateSearchQuery = (query) => {
+        setSearchQuery(query);
+    };
+
+    // Update URL query params when debounced search value changes
+    useEffect(() => {
+        if (debouncedSearchQuery.trim()) {
+            setSearchParams({ search: debouncedSearchQuery.trim() });
+        } else {
+            setSearchParams({});
+        }
+    }, [debouncedSearchQuery, setSearchParams]);
 
     // Custom Cake Request Form Modal State
     const [isCustomRequestModalOpen, setIsCustomRequestModalOpen] = useState(false);
@@ -86,6 +218,39 @@ const Menu = () => {
     useEffect(() => {
         localStorage.setItem('mr-pastry-reviews', JSON.stringify(reviews));
     }, [reviews]);
+
+    // Database items and categories states
+    const [dbItems, setDbItems] = useState([]);
+    const [dbCategories, setDbCategories] = useState([]);
+    const [loadingMenu, setLoadingMenu] = useState(true);
+
+    // Fetch menu data from backend API using 400ms debounced search query parameter
+    useEffect(() => {
+        const fetchDbMenu = async () => {
+            setLoadingMenu(true);
+            try {
+                const params = {};
+                if (debouncedSearchQuery.trim()) {
+                    params.search = debouncedSearchQuery.trim();
+                }
+                const [itemsRes, catRes] = await Promise.all([
+                    axios.get('http://localhost:3000/api/items', { params }),
+                    axios.get('http://localhost:3000/api/categories')
+                ]);
+                if (itemsRes.data && itemsRes.data.success && Array.isArray(itemsRes.data.data)) {
+                    setDbItems(itemsRes.data.data);
+                }
+                if (catRes.data && catRes.data.success && Array.isArray(catRes.data.data)) {
+                    setDbCategories(catRes.data.data);
+                }
+            } catch (err) {
+                console.error("Failed to load menu data:", err);
+            } finally {
+                setLoadingMenu(false);
+            }
+        };
+        fetchDbMenu();
+    }, [debouncedSearchQuery]);
 
     // Gourmet Toast Notification Helper
     const showToast = (type, title, description) => {
@@ -228,74 +393,124 @@ const Menu = () => {
         });
     };
 
-    // Filtered Cake Items calculation
-    const filteredCakeGroupedItems = useMemo(() => {
-        const result = {};
-        const targetCategories = selectedCategoryFilter === 'ALL' 
-            ? Object.keys(cakeImages) 
-            : [selectedCategoryFilter];
+    // Helper to check if item category matches active tab selection
+    const matchesActiveTab = (itemCat, tab) => {
+        if (!tab || tab === 'ALL') return true;
+        const catLower = (itemCat || '').toLowerCase().trim();
+        if (tab === 'CAKES') {
+            return catLower.includes('cake') || catLower.includes('a category');
+        }
+        if (tab === 'CUSTOM') {
+            return catLower.includes('custom') || catLower.includes('cake');
+        }
+        if (tab === 'DESSERTS') {
+            return catLower.includes('dessert') || catLower.includes('bakery') || catLower.includes('pastry') || catLower.includes('b category');
+        }
+        if (tab === 'SNACKS') {
+            return catLower.includes('snack') || catLower.includes('food') || catLower.includes('savory') || catLower.includes('snake') || catLower.includes('c category');
+        }
+        if (tab === 'BEVERAGES') {
+            return catLower.includes('beverage') || catLower.includes('drink') || catLower.includes('coffee') || catLower.includes('tea');
+        }
+        if (tab === 'PARTY') {
+            return catLower.includes('party') || catLower.includes('essential');
+        }
+        return true;
+    };
 
-        targetCategories.forEach(cat => {
-            if (!cakeImages[cat]) return;
-            
-            let items = cakeImages[cat].map(item => {
-                const itemId = `${cat}-${item.name}`;
-                const numPrice = parseInt(item.price?.replace(/[^0-9]/g, '') || '499');
-                return {
-                    ...item,
-                    id: itemId,
-                    categoryKey: cat,
-                    ratingVal: 4.8,
-                    numericPrice: numPrice,
-                    isEggless: true,
-                    isVeg: true,
-                    type: 'cake'
-                };
-            });
+    // Filtered Cake Items calculation using database items only
+    const filteredCakeGroupedItems = useMemo(() => {
+        let result = {};
+
+        dbItems.forEach((item) => {
+            const cat = item.category || 'Cake Item';
+            if (selectedCategoryFilter !== 'ALL' && selectedCategoryFilter !== cat) return;
+            if (!matchesActiveTab(cat, activeTab)) return;
+
+            const itemId = item._id || item.id;
+            const rawPrice = typeof item.price === 'number' ? item.price : (parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 499);
+            const offerPct = Number(item.offerPercentage) || 0;
+            const hasOffer = offerPct > 0;
+            const finalOfferPrice = item.offerPrice || (hasOffer ? Math.round(rawPrice * (1 - offerPct / 100)) : rawPrice);
+            const originalBasePrice = hasOffer ? (item.originalPrice || rawPrice) : null;
+            const imgUrl = item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:3000/images/${item.image}`) : 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80';
+
+            const itemObj = {
+                ...item,
+                id: itemId,
+                _id: itemId,
+                name: item.name,
+                description: item.description || item.desc || '',
+                desc: item.description || item.desc || '',
+                price: `₹${finalOfferPrice}`,
+                offerPrice: finalOfferPrice,
+                originalPrice: originalBasePrice,
+                offerPercentage: offerPct,
+                hasOffer: hasOffer,
+                discount: hasOffer ? `${offerPct}% OFF` : '',
+                priceValue: finalOfferPrice,
+                numericPrice: finalOfferPrice,
+                categoryKey: cat,
+                ratingVal: 4.9,
+                image: imgUrl,
+                isEggless: true,
+                isVeg: true,
+            };
 
             // 1. Search Query Filter
             if (searchQuery.trim()) {
                 const q = searchQuery.toLowerCase().trim();
-                items = items.filter(i => i.name.toLowerCase().includes(q));
+                if (!itemObj.name.toLowerCase().includes(q) && !itemObj.desc.toLowerCase().includes(q) && !cat.toLowerCase().includes(q)) return;
             }
 
             // 2. Price Range Filter
-            if (selectedPriceFilter === 'UNDER_750') {
-                items = items.filter(i => i.numericPrice < 750);
-            } else if (selectedPriceFilter === '750_1000') {
-                items = items.filter(i => i.numericPrice >= 750 && i.numericPrice <= 1000);
-            } else if (selectedPriceFilter === 'ABOVE_1000') {
-                items = items.filter(i => i.numericPrice > 1000);
-            }
+            if (selectedPriceFilter === 'UNDER_750' && itemObj.numericPrice >= 750) return;
+            if (selectedPriceFilter === '750_1000' && (itemObj.numericPrice < 750 || itemObj.numericPrice > 1000)) return;
+            if (selectedPriceFilter === 'ABOVE_1000' && itemObj.numericPrice <= 1000) return;
 
-            // 3. Rating Filter
-            if (selectedRatingFilter === '4.8') {
-                items = items.filter(i => i.ratingVal >= 4.8);
-            } else if (selectedRatingFilter === '4.5') {
-                items = items.filter(i => i.ratingVal >= 4.5);
-            }
+            if (!result[cat]) result[cat] = [];
+            result[cat].push(itemObj);
+        });
 
-            // 4. Diet Filter
-            if (dietFilter === 'EGGLESS') {
-                items = items.filter(i => i.isEggless);
-            } else if (dietFilter === 'VEG') {
-                items = items.filter(i => i.isVeg);
-            }
+        // Fallback: If no items matched activeTab filter, show all dbItems
+        if (Object.keys(result).length === 0 && dbItems.length > 0 && !searchQuery.trim()) {
+            dbItems.forEach((item) => {
+                const cat = item.category || 'Cake Item';
+                const itemId = item._id || item.id;
+                const numPrice = typeof item.price === 'number' ? item.price : (parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 599);
+                const imgUrl = item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:3000/images/${item.image}`) : 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80';
+                const itemObj = {
+                    ...item,
+                    id: itemId,
+                    _id: itemId,
+                    name: item.name,
+                    description: item.description || item.desc || '',
+                    desc: item.description || item.desc || '',
+                    price: `₹${numPrice}`,
+                    priceValue: numPrice,
+                    numericPrice: numPrice,
+                    categoryKey: cat,
+                    ratingVal: 4.9,
+                    image: imgUrl,
+                    isEggless: true,
+                    isVeg: true,
+                };
+                if (!result[cat]) result[cat] = [];
+                result[cat].push(itemObj);
+            });
+        }
 
-            // 5. Sorting
+        // 3. Sorting
+        Object.keys(result).forEach((cat) => {
             if (sortBy === 'PRICE_LOW_HIGH') {
-                items.sort((a, b) => a.numericPrice - b.numericPrice);
+                result[cat].sort((a, b) => a.numericPrice - b.numericPrice);
             } else if (sortBy === 'PRICE_HIGH_LOW') {
-                items.sort((a, b) => b.numericPrice - a.numericPrice);
-            }
-
-            if (items.length > 0) {
-                result[cat] = items;
+                result[cat].sort((a, b) => b.numericPrice - a.numericPrice);
             }
         });
 
         return result;
-    }, [searchQuery, selectedCategoryFilter, selectedPriceFilter, selectedRatingFilter, dietFilter, sortBy]);
+    }, [dbItems, searchQuery, selectedCategoryFilter, selectedPriceFilter, selectedRatingFilter, dietFilter, sortBy, activeTab]);
 
     // Generic list filter helper
     const filterListItems = (list, itemType) => {
@@ -317,14 +532,8 @@ const Menu = () => {
         return items;
     };
 
-    const filteredCustomCakes = filterListItems(customizedCakesCategories, 'custom_cake');
-    const filteredDesserts = filterListItems(dessertsBakery, 'dessert');
-    const filteredSnacks = filterListItems(snacksFastFood, 'snack');
-    const filteredBeverages = filterListItems(beverages, 'beverage');
-    const filteredParty = filterListItems(partyEssentials, 'party');
-
     const totalCakesCount = Object.values(filteredCakeGroupedItems).reduce((acc, curr) => acc + curr.length, 0);
-    const totalFilteredCount = totalCakesCount + filteredCustomCakes.length + filteredDesserts.length + filteredSnacks.length + filteredBeverages.length + filteredParty.length;
+    const totalFilteredCount = totalCakesCount;
 
     const hasActiveFilters = searchQuery || selectedCategoryFilter !== 'ALL' || selectedPriceFilter !== 'ALL' || selectedRatingFilter !== 'ALL' || dietFilter !== 'ALL' || sortBy !== 'DEFAULT';
 
@@ -339,6 +548,17 @@ const Menu = () => {
         showToast('info', 'Filters Cleared 🔄', 'Showing all menu items.');
     };
 
+    const formatCategoryName = (catName) => {
+        if (!catName || catName === 'ALL') return 'All Categories';
+        const c = String(catName).trim();
+        const lower = c.toLowerCase();
+        if (lower === 'mano' || lower === 'mango') return 'Mango Delights';
+        if (lower === 'cake item' || lower === 'cakes' || lower === 'a category') return 'Signature Cakes';
+        if (lower === 'snakes item' || lower === 'snacks item' || lower === 'snacks' || lower === 'c category') return 'Savory Snacks';
+        if (lower === 'deserts item' || lower === 'desserts item' || lower === 'desserts' || lower === 'b category') return 'Decadent Desserts';
+        return c.charAt(0).toUpperCase() + c.slice(1);
+    };
+
     const renderSidebarFilterContent = () => (
         <aside className="menu-filter-sidebar">
             <div className="sidebar-header">
@@ -350,43 +570,18 @@ const Menu = () => {
                 )}
             </div>
 
-            {/* Search Input Box */}
-            <div className="filter-group search-filter-group">
-                <label>Search All Items</label>
-                <div className="search-input-box">
-                    <SearchOutlined className="search-icon" />
-                    <input 
-                        type="text" 
-                        placeholder="Search cakes, snacks, coffee..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                        <button type="button" className="clear-search" onClick={() => setSearchQuery('')}>✕</button>
-                    )}
-                </div>
-            </div>
-
             {/* Category Filter */}
             <div className="filter-group">
-                <label>Menu Section</label>
+                <label>Menu Categories</label>
                 <div className="filter-options-list">
-                    {[
-                        { key: 'ALL', label: 'All Menu' },
-                        { key: 'CAKES', label: '🎂 Cakes' },
-                        { key: 'CUSTOM', label: '🎨 Customized Cakes' },
-                        { key: 'DESSERTS', label: '🧁 Desserts & Bakery' },
-                        { key: 'SNACKS', label: '🍔 Snacks & Fast Food' },
-                        { key: 'BEVERAGES', label: '☕ Tea & Beverages' },
-                        { key: 'PARTY', label: '🎉 Party Essentials' }
-                    ].map(t => (
+                    {['ALL', ...Array.from(new Set([...dbCategories.map(c => c.name), ...dbItems.map(i => i.category || 'Cake Item')]))].map(catName => (
                         <button 
-                            key={t.key}
+                            key={catName}
                             type="button"
-                            className={`filter-chip ${activeTab === t.key ? 'active' : ''}`}
-                            onClick={() => setActiveTab(t.key)}
+                            className={`filter-chip ${selectedCategoryFilter === catName ? 'active' : ''}`}
+                            onClick={() => setSelectedCategoryFilter(catName)}
                         >
-                            {t.label}
+                            {catName === 'ALL' ? 'All Categories' : formatCategoryName(catName)}
                         </button>
                     ))}
                 </div>
@@ -438,18 +633,40 @@ const Menu = () => {
             {/* Sort Options */}
             <div className="filter-group">
                 <label>Sort By</label>
-                <select 
-                    className="filter-sort-select"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                >
-                    <option value="DEFAULT">Featured / Recommended</option>
-                    <option value="PRICE_LOW_HIGH">Price: Low to High</option>
-                    <option value="PRICE_HIGH_LOW">Price: High to Low</option>
-                </select>
+                <div className="filter-options-list">
+                    {[
+                        { key: 'DEFAULT', label: '⭐ Featured / Recommended' },
+                        { key: 'PRICE_LOW_HIGH', label: '📈 Price: Low to High' },
+                        { key: 'PRICE_HIGH_LOW', label: '📉 Price: High to Low' }
+                    ].map(s => (
+                        <button 
+                            key={s.key}
+                            type="button"
+                            className={`filter-chip ${sortBy === s.key ? 'active' : ''}`}
+                            onClick={() => setSortBy(s.key)}
+                        >
+                            {s.label}
+                        </button>
+                    ))}
+                </div>
             </div>
         </aside>
     );
+
+    const tabMetaMap = {
+        ALL: { title: '🎂 Bakery Menu', subtitle: 'Explore our full selection of freshly baked delights & snacks' },
+        CAKES: { title: '🎂 Fresh Gourmet Cakes', subtitle: 'Baked fresh to order with 100% premium ingredients' },
+        CUSTOM: { title: '🎨 Customized Cakes', subtitle: 'Handcrafted bespoke cakes designed specifically for your special celebrations' },
+        DESSERTS: { title: '🧁 Desserts & Bakery', subtitle: 'Fresh pastries, tarts, brownies, and artisanal dessert treats' },
+        SNACKS: { title: '🍔 Snacks & Fast Food', subtitle: 'Delicious savory snacks, burgers, patties, and quick bites' },
+        BEVERAGES: { title: '☕ Refreshing Beverages', subtitle: 'Chilled shakes, gourmet coffees, and artisanal sodas & teas' },
+        PARTY: { title: '🎉 Party Essentials', subtitle: 'Celebration candles, cake toppers, party favors, and decor' }
+    };
+
+    const activeMeta = tabMetaMap[activeTab] || {
+        title: categoryLabels[selectedCategory] || 'Bakery Products',
+        subtitle: 'Freshly prepared with 100% premium ingredients'
+    };
 
     return (
         <main className="menu-page-container">
@@ -458,36 +675,55 @@ const Menu = () => {
 
             <div className="menu-page-content">
                 
-                {/* Section Header */}
-                <div className="menu-section-header">
-                    <span className="menu-badge">Gourmet Bakery & Café</span>
-                    <h2 className="menu-title">Our Delicious <span>Menu</span></h2>
-                    <p className="menu-subtitle">Explore freshly baked cakes, snacks, beverages, and party supplies for your sweet celebrations.</p>
-                </div>
+                {/* Top Hero Header Card with Footer Gradient */}
+                <div className="menu-hero-header-card">
+                    {/* Section Header */}
+                    <div className="menu-section-header">
+                        <span className="menu-badge">Gourmet Bakery & Café</span>
+                        <h2 className="menu-title">Our Delicious <span>Menu</span></h2>
+                        <p className="menu-subtitle">Explore freshly baked cakes, snacks, beverages, and party supplies for your sweet celebrations.</p>
 
-                {/* Sticky Top Category Navigation Bar */}
-                <nav className="sticky-menu-nav-bar">
-                    <div className="nav-tabs-scroll-wrapper">
-                        {[
-                            { key: 'ALL', label: 'All Menu' },
-                            { key: 'CAKES', label: '🎂 Cakes' },
-                            { key: 'CUSTOM', label: '🎨 Customized Cakes' },
-                            { key: 'DESSERTS', label: '🧁 Desserts & Bakery' },
-                            { key: 'SNACKS', label: '🍔 Snacks & Fast Food' },
-                            { key: 'BEVERAGES', label: '☕ Beverages' },
-                            { key: 'PARTY', label: '🎉 Party Essentials' }
-                        ].map(tab => (
-                            <button
-                                key={tab.key}
-                                type="button"
-                                className={`sticky-nav-tab ${activeTab === tab.key ? 'active' : ''}`}
-                                onClick={() => setActiveTab(tab.key)}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
+                        {/* Top Search Bar */}
+                        <div className="menu-top-search-wrapper">
+                            <div className="menu-top-search-box">
+                                <SearchOutlined className="search-icon" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search cakes, snacks, coffee..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button type="button" className="clear-search-btn" onClick={() => setSearchQuery('')}>✕</button>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                </nav>
+
+                    {/* Sticky Top Category Navigation Bar */}
+                    <nav className="sticky-menu-nav-bar">
+                        <div className="nav-tabs-scroll-wrapper">
+                            {[
+                                { key: 'ALL', label: 'All Menu' },
+                                { key: 'CAKES', label: '🎂 Cakes' },
+                                { key: 'CUSTOM', label: '🎨 Customized Cakes' },
+                                { key: 'DESSERTS', label: '🧁 Desserts & Bakery' },
+                                { key: 'SNACKS', label: '🍔 Snacks & Fast Food' },
+                                { key: 'BEVERAGES', label: '☕ Beverages' },
+                                { key: 'PARTY', label: '🎉 Party Essentials' }
+                            ].map(tab => (
+                                <button
+                                    key={tab.key}
+                                    type="button"
+                                    className={`sticky-nav-tab ${activeTab === tab.key ? 'active' : ''}`}
+                                    onClick={() => setActiveTab(tab.key)}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+                </div>
 
                 {/* Mobile Filter Toggle Button */}
                 <div className="mobile-filter-bar-row">
@@ -513,6 +749,52 @@ const Menu = () => {
                     {/* Right Product Grid Column */}
                     <div className="menu-main-products-column">
                         
+                        {/* Browse Categories Auto-Scrolling Showcase Grid */}
+                        {activeTab === 'ALL' && !searchQuery.trim() && (
+                            <div className="browse-categories-section">
+                                <div className="browse-cat-header-row">
+                                    <div>
+                                        <h2 className="browse-cat-title">Browse Categories</h2>
+                                        <p className="browse-cat-sub">Discover our delicious range of freshly baked items</p>
+                                    </div>
+                                    <div className="freshly-baked-badge-pill">
+                                        <span>Freshly Baked ♥</span>
+                                    </div>
+                                </div>
+
+                                <div className="browse-cat-single-row-wrapper" aria-label="Single row auto-scrolling categories">
+                                    <div className="browse-cat-single-row-track">
+                                        {[...browseCategoryCards, ...browseCategoryCards].map((cat, idx) => (
+                                            <div 
+                                                key={`${cat.key}-${idx}`} 
+                                                className="browse-cat-card single-row-card"
+                                                onClick={() => {
+                                                    setActiveTab(cat.key);
+                                                    const navEl = document.querySelector('.sticky-menu-nav-bar');
+                                                    if (navEl) navEl.scrollIntoView({ behavior: 'smooth' });
+                                                }}
+                                            >
+                                                <CategoryAutoImage images={cat.images} title={cat.title} />
+                                                <div className="cat-card-info-col">
+                                                    <div className="cat-title-row">
+                                                        <span className="cat-emoji">{cat.icon}</span>
+                                                        <h3 className="cat-title">{cat.title}</h3>
+                                                    </div>
+                                                    <p className="cat-desc">{cat.subtitle}</p>
+                                                    <div className="cat-card-bottom">
+                                                        <span className="cat-count">{cat.itemsCount}</span>
+                                                        <button type="button" className="cat-arrow-btn" aria-label={`View ${cat.title}`}>
+                                                            ➔
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Results Summary Bar */}
                         <div className="results-summary-bar">
                             <span>Showing <strong>{totalFilteredCount}</strong> items in <strong>{activeTab === 'ALL' ? 'All Categories' : activeTab}</strong></span>
@@ -533,86 +815,123 @@ const Menu = () => {
                         ) : (
                             <div className="menu-categories-wrapper">
                                 
-                                {/* 1. CAKES SECTION */}
-                                {(activeTab === 'ALL' || activeTab === 'CAKES') && totalCakesCount > 0 && (
+                                {totalCakesCount > 0 && (
                                     <section className="menu-category-section" id="cakes-section">
                                         <div className="section-title-wrapper">
-                                            <h3 className="category-title">🎂 Fresh Gourmet Cakes</h3>
-                                            <span className="category-subtitle">Baked fresh to order with 100% premium ingredients</span>
+                                            <h3 className="category-title">{activeMeta.title}</h3>
+                                            <span className="category-subtitle">{activeMeta.subtitle}</span>
                                         </div>
-
                                         {Object.keys(filteredCakeGroupedItems).map((category) => (
                                             <div key={category} className="subcategory-block">
-                                                <h4 className="subcategory-title">~ {categoryLabels[category] || category} ~</h4>
+                                                <h4 className="subcategory-title">{formatCategoryName(category)}</h4>
                                                 <div className="cakes-grid">
-                                                    {filteredCakeGroupedItems[category].map((item) => {
+                                                    {filteredCakeGroupedItems[category].map((item, itemIdx) => {
                                                         const itemId = item.id;
                                                         const scaled = getScaledPrices(itemId, item.price);
                                                         const currentWeight = selectedWeights[itemId] || '1';
-
+                                                        const isLiked = likedItems[itemId] || false;
                                                         return (
                                                             <article key={itemId} className="sample-cake-card menu-cake-card" onClick={() => openCakeModal({ ...item, id: itemId })}>
                                                                 <div className="card-image-box">
-                                                                    <img src={item.image} alt={item.name} />
-                                                                    <span className="diet-pill veg">🌿 Eggless</span>
-                                                                    <span className="rating-pill">4.8 ★</span>
-                                                                    <button type="button" className="quick-add-btn" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, id: itemId, price: scaled.price, weight: scaled.weightText }); showToast('success', 'Added to Cart! 🛒', `${item.name} (${scaled.weightText}) has been added.`); }} aria-label={`Add ${item.name} to cart`}>+</button>
+                                                                    <img src={item.image} alt={item.name} className="card-img" />
+                                                                    <div className="card-badges-container">
+                                                                        {item.hasOffer ? (
+                                                                            <span className="card-badge discount">{item.discount || 'Special Offer'}</span>
+                                                                        ) : itemIdx % 3 === 0 ? (
+                                                                            <span className="card-badge bestseller">🔥 Bestseller</span>
+                                                                        ) : itemIdx % 3 === 1 ? (
+                                                                            <span className="card-badge fresh">✨ Fresh</span>
+                                                                        ) : (
+                                                                            <span className="card-badge popular">👑 Popular</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <button 
+                                                                        type="button" 
+                                                                        className="fav-btn" 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setLikedItems(prev => ({ ...prev, [itemId]: !prev[itemId] }));
+                                                                        }}
+                                                                    >
+                                                                        <HeartFilled style={{ color: isLiked ? '#ef4444' : '#94a3b8', fontSize: '14px' }} />
+                                                                    </button>
                                                                 </div>
-                                                                <div className="card-content-box">
-                                                                    <h3 className="card-item-name">{item.name}</h3>
-                                                                    <p className="card-item-desc">Rich layers, balanced sweetness, and a soft cream finish.</p>
+                                                                
+                                                                <div className="card-info">
+                                                                    <h3 className="card-title">{item.name}</h3>
+                                                                    <p className="card-desc">{item.description || 'product description'}</p>
                                                                     
-                                                                    <div className="custom-weight-dropdown-wrapper" onClick={(e) => e.stopPropagation()}>
-                                                                        <button 
-                                                                            type="button" 
-                                                                            className="weight-dropdown-pill"
-                                                                            onClick={() => setOpenDropdownId(openDropdownId === itemId ? null : itemId)}
-                                                                        >
-                                                                            <span className="weight-text">
-                                                                                {currentWeight === 'custom' ? `${customWeightVal || 6} Kg` : `${currentWeight} Kg`}
-                                                                            </span>
-                                                                            <span className="pink-arrow">▾</span>
-                                                                        </button>
+                                                                    <div className="card-meta-row">
+                                                                        <div className="card-rating">
+                                                                            <StarFilled style={{ color: '#eab308', fontSize: '12px' }} />
+                                                                            <span>4.9</span>
+                                                                        </div>
 
-                                                                        {openDropdownId === itemId && (
-                                                                            <>
-                                                                                <div className="weight-dropdown-overlay" onClick={() => setOpenDropdownId(null)} />
-                                                                                <ul className="weight-dropdown-menu">
-                                                                                    {['1', '2', '3', '4', '5'].map((kg) => (
+                                                                        {/* Weight Selector Dropdown */}
+                                                                        <div className="custom-weight-dropdown-wrapper" onClick={(e) => e.stopPropagation()}>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="weight-dropdown-trigger"
+                                                                                onClick={() => setOpenDropdownId(openDropdownId === itemId ? null : itemId)}
+                                                                            >
+                                                                                <span>{currentWeight === 'custom' ? `${customWeightVal || 6}Kg` : `${currentWeight}Kg`}</span>
+                                                                                <span className="arrow-small">▾</span>
+                                                                            </button>
+
+                                                                            {openDropdownId === itemId && (
+                                                                                <>
+                                                                                    <div className="weight-dropdown-overlay" onClick={() => setOpenDropdownId(null)} />
+                                                                                    <ul className="weight-dropdown-menu">
+                                                                                        {['1', '2', '3', '4', '5'].map((kg) => (
+                                                                                            <li 
+                                                                                                key={kg}
+                                                                                                className={currentWeight === kg ? 'active' : ''}
+                                                                                                onClick={() => {
+                                                                                                    setSelectedWeights(prev => ({ ...prev, [itemId]: kg }));
+                                                                                                    setOpenDropdownId(null);
+                                                                                                }}
+                                                                                            >
+                                                                                                <span>{kg} Kg</span>
+                                                                                                {currentWeight === kg && <span className="check-mark">✓</span>}
+                                                                                            </li>
+                                                                                        ))}
                                                                                         <li 
-                                                                                            key={kg}
-                                                                                            className={currentWeight === kg ? 'active' : ''}
+                                                                                            className={currentWeight === 'custom' ? 'active custom-option' : 'custom-option'}
                                                                                             onClick={() => {
-                                                                                                setSelectedWeights(prev => ({ ...prev, [itemId]: kg }));
+                                                                                                setCustomModalItem(item);
+                                                                                                setSelectedWeights(prev => ({ ...prev, [itemId]: 'custom' }));
                                                                                                 setOpenDropdownId(null);
                                                                                             }}
                                                                                         >
-                                                                                            <span>{kg} Kg</span>
-                                                                                            {currentWeight === kg && <span className="check-mark">✓</span>}
+                                                                                            <span>Custom Weight (6+ Kg)...</span>
                                                                                         </li>
-                                                                                    ))}
-                                                                                    <li 
-                                                                                        className={currentWeight === 'custom' ? 'active custom-option' : 'custom-option'}
-                                                                                        onClick={() => {
-                                                                                            setCustomModalItem(item);
-                                                                                            setSelectedWeights(prev => ({ ...prev, [itemId]: 'custom' }));
-                                                                                            setOpenDropdownId(null);
-                                                                                        }}
-                                                                                    >
-                                                                                        <span>Custom Weight (6+ Kg)...</span>
-                                                                                    </li>
-                                                                                </ul>
-                                                                            </>
-                                                                        )}
+                                                                                    </ul>
+                                                                                </>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
 
-                                                                    <div className="card-bottom-row">
-                                                                        <div className="price-stack">
-                                                                            <span className="current-price">{scaled.price}</span>
-                                                                            <span className="original-price">{scaled.originalPrice}</span>
+                                                                    <div className="card-footer">
+                                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                                                            {item.hasOffer && item.originalPrice ? (
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                                                    <span className="card-price" style={{ color: '#e03c78', fontWeight: 800 }}>{scaled.price}</span>
+                                                                                    <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '1.2rem' }}>₹{item.originalPrice}</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <span className="card-price">{scaled.price}</span>
+                                                                            )}
                                                                         </div>
-                                                                        <button type="button" className="add-cart-btn-sm" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, id: itemId, price: scaled.price, weight: scaled.weightText }); showToast('success', 'Added to Cart! 🛒', `${item.name} (${scaled.weightText}) has been added.`); }}>
-                                                                            Add +
+                                                                        <button 
+                                                                            type="button" 
+                                                                            className="add-plus-btn"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                addToCart({ ...item, id: itemId, price: scaled.price, weight: scaled.weightText });
+                                                                                showToast('success', 'Added to Cart! 🛒', `${item.name} (${scaled.weightText}) has been added.`);
+                                                                            }}
+                                                                        >
+                                                                            +
                                                                         </button>
                                                                     </div>
                                                                 </div>
@@ -624,247 +943,63 @@ const Menu = () => {
                                         ))}
                                     </section>
                                 )}
-
-                                {/* 2. CUSTOMIZED CAKES SECTION + CTA BANNER */}
-                                {(activeTab === 'ALL' || activeTab === 'CUSTOM') && (
-                                    <section className="menu-category-section" id="custom-cakes-section">
-                                        
-                                        {/* Custom Cake Banner CTA */}
-                                        <div className="custom-cake-hero-banner">
-                                            <div className="banner-text">
-                                                <span className="sparkle-badge">✨ Made to Order</span>
-                                                <h3>Have a dream cake in mind? Let's make it happen! 🎂✨</h3>
-                                                <p>Upload your reference design, choose your flavours, weight, and date. Our master bakers will craft it with perfection.</p>
-                                                <button type="button" className="request-custom-btn" onClick={() => setIsCustomRequestModalOpen(true)}>
-                                                    <RocketFilled /> Request a Custom Cake
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="section-title-wrapper">
-                                            <h3 className="category-title">🎨 Customized & Theme Cakes</h3>
-                                            <span className="category-subtitle">Handcrafted photo, 3D theme, and designer cakes</span>
-                                        </div>
-
-                                        <div className="cakes-grid">
-                                            {filteredCustomCakes.map((cake) => (
-                                                <article key={cake.id} className="sample-cake-card menu-cake-card" onClick={() => openCakeModal(cake)}>
-                                                    <div className="card-image-box">
-                                                        <img src={cake.image} alt={cake.name} />
-                                                        <span className="diet-pill veg">🎨 {cake.category}</span>
-                                                        <span className="rating-pill">{cake.rating} ★</span>
-                                                        <button type="button" className="quick-add-btn" onClick={(e) => { e.stopPropagation(); addToCart({ ...cake, weight: '1 Kg' }); showToast('success', 'Added to Cart! 🛒', `${cake.name} has been added.`); }}>+</button>
-                                                    </div>
-                                                    <div className="card-content-box">
-                                                        <h3 className="card-item-name">{cake.name}</h3>
-                                                        <p className="card-item-desc">{cake.description}</p>
-                                                        <div className="card-bottom-row">
-                                                            <span className="current-price">{cake.price}</span>
-                                                            <button type="button" className="add-cart-btn-sm" onClick={(e) => { e.stopPropagation(); addToCart({ ...cake, weight: '1 Kg' }); showToast('success', 'Added to Cart! 🛒', `${cake.name} has been added.`); }}>
-                                                                Add +
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
-
-                                {/* 3. DESSERTS & BAKERY SECTION */}
-                                {(activeTab === 'ALL' || activeTab === 'DESSERTS') && filteredDesserts.length > 0 && (
-                                    <section className="menu-category-section" id="desserts-section">
-                                        <div className="section-title-wrapper">
-                                            <h3 className="category-title">🧁 Desserts & Bakery Treats</h3>
-                                            <span className="category-subtitle">Cupcakes, brownies, cookies, donuts, and fresh pastries</span>
-                                        </div>
-
-                                        <div className="cakes-grid">
-                                            {filteredDesserts.map((item) => (
-                                                <article key={item.id} className="sample-cake-card menu-cake-card" onClick={() => openCakeModal(item)}>
-                                                    <div className="card-image-box">
-                                                        <img src={item.image} alt={item.name} />
-                                                        <span className="diet-pill veg">{item.isEggless ? '🌿 Eggless' : '🟢 Veg'}</span>
-                                                        <span className="rating-pill">{item.rating} ★</span>
-                                                        <button type="button" className="quick-add-btn" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: '1 Pc' }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>+</button>
-                                                    </div>
-                                                    <div className="card-content-box">
-                                                        <h3 className="card-item-name">{item.name}</h3>
-                                                        <p className="card-item-desc">{item.description}</p>
-                                                        <div className="card-bottom-row">
-                                                            <span className="current-price">{item.price}</span>
-                                                            <button type="button" className="add-cart-btn-sm" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: '1 Pc' }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>
-                                                                Add +
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
-
-                                {/* 4. SNACKS & FAST FOOD SECTION */}
-                                {(activeTab === 'ALL' || activeTab === 'SNACKS') && filteredSnacks.length > 0 && (
-                                    <section className="menu-category-section" id="snacks-section">
-                                        <div className="section-title-wrapper">
-                                            <h3 className="category-title">🍔 Café Snacks & Fast Food</h3>
-                                            <span className="category-subtitle">Freshly baked pizzas, burgers, fries, sandwiches, and wraps</span>
-                                        </div>
-
-                                        <div className="cakes-grid">
-                                            {filteredSnacks.map((item) => {
-                                                const selectedVariant = selectedVariants[item.id] || item.variants?.[0] || 'Regular';
-                                                return (
-                                                    <article key={item.id} className="sample-cake-card menu-cake-card" onClick={() => openCakeModal(item)}>
-                                                        <div className="card-image-box">
-                                                            <img src={item.image} alt={item.name} />
-                                                            <span className="diet-pill veg">🟢 100% Veg</span>
-                                                            <span className="rating-pill">{item.rating} ★</span>
-                                                            <button type="button" className="quick-add-btn" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: selectedVariant }); showToast('success', 'Added to Cart! 🛒', `${item.name} (${selectedVariant}) has been added.`); }}>+</button>
-                                                        </div>
-                                                        <div className="card-content-box">
-                                                            <h3 className="card-item-name">{item.name}</h3>
-                                                            <p className="card-item-desc">{item.description}</p>
-
-                                                            {item.variants && (
-                                                                <div className="variant-pills-row" onClick={(e) => e.stopPropagation()}>
-                                                                    {item.variants.map(v => (
-                                                                        <button 
-                                                                            key={v}
-                                                                            type="button" 
-                                                                            className={`variant-pill ${selectedVariant === v ? 'active' : ''}`}
-                                                                            onClick={() => setSelectedVariants(prev => ({ ...prev, [item.id]: v }))}
-                                                                        >
-                                                                            {v}
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-
-                                                            <div className="card-bottom-row">
-                                                                <span className="current-price">{item.price}</span>
-                                                                <button type="button" className="add-cart-btn-sm" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: selectedVariant }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>
-                                                                    Add +
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </article>
-                                                );
-                                            })}
-                                        </div>
-                                    </section>
-                                )}
-
-                                {/* 5. BEVERAGES SECTION */}
-                                {(activeTab === 'ALL' || activeTab === 'BEVERAGES') && filteredBeverages.length > 0 && (
-                                    <section className="menu-category-section" id="beverages-section">
-                                        <div className="section-title-wrapper">
-                                            <h3 className="category-title">☕ Tea, Coffee & Beverages</h3>
-                                            <span className="category-subtitle">Aromatic hot brews, iced cold coffees, shakes & fresh juices</span>
-                                        </div>
-
-                                        <div className="cakes-grid">
-                                            {filteredBeverages.map((item) => {
-                                                const selectedVariant = selectedVariants[item.id] || item.variants?.[0] || 'Regular';
-                                                return (
-                                                    <article key={item.id} className="sample-cake-card menu-cake-card" onClick={() => openCakeModal(item)}>
-                                                        <div className="card-image-box">
-                                                            <img src={item.image} alt={item.name} />
-                                                            <span className="diet-pill veg">☕ Café Special</span>
-                                                            <span className="rating-pill">{item.rating} ★</span>
-                                                            <button type="button" className="quick-add-btn" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: selectedVariant }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>+</button>
-                                                        </div>
-                                                        <div className="card-content-box">
-                                                            <h3 className="card-item-name">{item.name}</h3>
-                                                            <p className="card-item-desc">{item.description}</p>
-
-                                                            {item.variants && (
-                                                                <div className="variant-pills-row" onClick={(e) => e.stopPropagation()}>
-                                                                    {item.variants.map(v => (
-                                                                        <button 
-                                                                            key={v}
-                                                                            type="button" 
-                                                                            className={`variant-pill ${selectedVariant === v ? 'active' : ''}`}
-                                                                            onClick={() => setSelectedVariants(prev => ({ ...prev, [item.id]: v }))}
-                                                                        >
-                                                                            {v}
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-
-                                                            <div className="card-bottom-row">
-                                                                <span className="current-price">{item.price}</span>
-                                                                <button type="button" className="add-cart-btn-sm" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: selectedVariant }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>
-                                                                    Add +
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </article>
-                                                );
-                                            })}
-                                        </div>
-                                    </section>
-                                )}
-
-                                {/* 6. PARTY ESSENTIALS SECTION */}
-                                {(activeTab === 'ALL' || activeTab === 'PARTY') && filteredParty.length > 0 && (
-                                    <section className="menu-category-section" id="party-section">
-                                        <div className="section-title-wrapper">
-                                            <h3 className="category-title">🎉 Party Essentials & Celebrations</h3>
-                                            <span className="category-subtitle">Balloons, fairy lights, cake toppers, candles & decoration kits</span>
-                                        </div>
-
-                                        <div className="cakes-grid">
-                                            {filteredParty.map((item) => (
-                                                <article key={item.id} className="sample-cake-card menu-cake-card" onClick={() => openCakeModal(item)}>
-                                                    <div className="card-image-box">
-                                                        <img src={item.image} alt={item.name} />
-                                                        <span className="diet-pill veg">🎈 Party Item</span>
-                                                        <button type="button" className="quick-add-btn" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: '1 Pc' }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>+</button>
-                                                    </div>
-                                                    <div className="card-content-box">
-                                                        <h3 className="card-item-name">{item.name}</h3>
-                                                        <p className="card-item-desc">Make your birthday or anniversary celebration extra special!</p>
-                                                        <div className="card-bottom-row">
-                                                            <span className="current-price">{item.price}</span>
-                                                            <button type="button" className="add-cart-btn-sm" onClick={(e) => { e.stopPropagation(); addToCart({ ...item, weight: '1 Pc' }); showToast('success', 'Added to Cart! 🛒', `${item.name} has been added.`); }}>
-                                                                Add +
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
-
                             </div>
                         )}
+
+                        {/* Special Offers Banner Card (Matches Reference UI Image) */}
+                        <div className="special-offers-banner-card">
+                            <div className="banner-left-icon">
+                                <span>🎂</span>
+                            </div>
+                            <div className="banner-text-info">
+                                <h3>Special Offers</h3>
+                                <p>Sweet deals for your celebrations</p>
+                            </div>
+                            <Link to="/contact" className="view-offers-btn">
+                                View Offers ➔
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Mobile Filter Slide Drawer */}
-            {isMobileFilterOpen && (
-                <div className="mobile-filter-backdrop" onClick={() => setIsMobileFilterOpen(false)}>
-                    <div className="mobile-filter-drawer" onClick={(e) => e.stopPropagation()}>
-                        <div className="mobile-filter-drawer-header">
-                            <span>Filter & Sort Menu</span>
-                            <button type="button" className="close-btn" onClick={() => setIsMobileFilterOpen(false)}>✕</button>
-                        </div>
-                        <div className="mobile-filter-drawer-body">
-                            {renderSidebarFilterContent()}
-                        </div>
-                        <div className="mobile-filter-drawer-footer">
-                            <button type="button" className="apply-filter-btn" onClick={() => setIsMobileFilterOpen(false)}>
-                                Apply Filters ({totalFilteredCount})
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <Drawer
+                title={<span style={{ fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: "1.8rem", fontWeight: 800, color: "#0f172a" }}>Filter & Sort Menu</span>}
+                placement="bottom"
+                onClose={() => setIsMobileFilterOpen(false)}
+                open={isMobileFilterOpen}
+                height="82vh"
+                styles={{
+                    body: { padding: '1.6rem 2rem' },
+                    header: { padding: '1.6rem 2rem', borderBottom: '1px solid #f1f5f9' },
+                    footer: { padding: '1.4rem 2rem', borderTop: '1px solid #f1f5f9' }
+                }}
+                footer={
+                    <button 
+                        type="button" 
+                        className="apply-filter-btn" 
+                        onClick={() => setIsMobileFilterOpen(false)}
+                        style={{
+                            width: '100%',
+                            padding: '1.4rem',
+                            borderRadius: '3rem',
+                            background: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
+                            color: '#ffffff',
+                            border: 'none',
+                            fontFamily: "'Poppins', 'Inter', sans-serif",
+                            fontSize: '1.5rem',
+                            fontWeight: 800,
+                            boxShadow: '0 0.6rem 2rem rgba(244, 63, 94, 0.35)',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Apply Filters ({totalFilteredCount})
+                    </button>
+                }
+            >
+                {renderSidebarFilterContent()}
+            </Drawer>
 
             {/* Item Quick View Modal - Responsive 2-Column Layout */}
             <Modal 
@@ -872,7 +1007,7 @@ const Menu = () => {
                 onCancel={() => setSelectedCake(null)} 
                 footer={null} 
                 className="cake-details-modal" 
-                destroyOnClose
+                destroyOnHidden
                 centered
                 width={860}
             >
@@ -1302,10 +1437,6 @@ const Menu = () => {
                 </form>
             </Modal>
 
-            {/* Floating Quick Cart Link */}
-            <Link to="/cart" className="menu-cart-link">
-                View Cart ({cartItems.reduce((acc, curr) => acc + (curr.quantity || 1), 0)}) 🛒
-            </Link>
         </main>
     );
 };

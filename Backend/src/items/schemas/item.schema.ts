@@ -14,8 +14,32 @@ export class Item {
   @Prop({ required: true })
   price: number;
 
+  @Prop({ required: false, default: 'PERCENTAGE' })
+  offerType: 'PERCENTAGE' | 'FLAT';
+
+  @Prop({ required: false, default: 0 })
+  offerPercentage: number;
+
+  @Prop({ required: false, default: 0 })
+  flatAmount: number;
+
+  @Prop({ required: false })
+  offerPrice: number;
+
+  @Prop({ required: false })
+  originalPrice: number;
+
+  @Prop({ required: false, default: '' })
+  discount: string;
+
   @Prop({ required: true })
   category: string;
+
+  @Prop({ required: false })
+  categoryId: string;
+
+  @Prop({ required: false })
+  sku: string;
 
   @Prop({ required: true })
   image: string;
